@@ -841,6 +841,282 @@ header {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ── SIDEBAR: SEARCH + FILTERS ────────────────────────────────── */
+.sb-search-wrap { padding: 12px 16px 8px; flex-shrink: 0; }
+.sb-search {
+  width: 100%;
+  background: var(--night);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--bone);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.sb-search::placeholder { color: var(--mist); }
+.sb-search:focus { border-color: var(--cyan); }
+.sb-filters {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 0 16px 10px;
+  flex-shrink: 0;
+}
+.sb-chip {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--mist);
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.sb-chip:hover { color: var(--bone); }
+.sb-chip.active { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-dim); }
+.sb-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--mist);
+  display: none;
+}
+
+/* Viewed check badge on organ cards */
+.oc-check {
+  display: none;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: var(--night);
+  font-size: 9px;
+  font-weight: 700;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  position: relative; z-index: 1;
+}
+.organ-card.viewed .oc-check { display: flex; }
+.organ-card.active .oc-check { display: none; }
+
+/* ── HEADER PROGRESS ──────────────────────────────────────────── */
+.hdr-progress-wrap {
+  display: flex; align-items: center; gap: 8px;
+  margin-left: 20px;
+}
+.hdr-progress-track {
+  width: 72px; height: 4px;
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.hdr-progress-bar {
+  height: 100%;
+  background: var(--cyan);
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.hdr-progress-label {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--mist);
+  white-space: nowrap;
+}
+
+/* ── X-RAY / CROSS-SECTION PANEL ──────────────────────────────── */
+.xray-panel {
+  position: absolute;
+  left: 16px; bottom: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(10,18,32,0.9);
+  border: 1px solid var(--rim);
+  border-radius: 6px;
+  padding: 12px 14px;
+  backdrop-filter: blur(10px);
+  width: 190px;
+  z-index: 15;
+}
+.xray-panel.show { display: flex; }
+.xray-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--mist);
+  text-transform: uppercase;
+}
+.xray-row span.val { color: var(--cyan); }
+.xray-slider {
+  width: 100%;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+.xray-axis-row { display: flex; gap: 6px; }
+.xray-axis-btn {
+  flex: 1;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  padding: 4px 0;
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 3px;
+  color: var(--mist);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.xray-axis-btn.on { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-dim); }
+
+/* ── MODAL (MASTER QUIZ) ──────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(6,9,15,0.85);
+  backdrop-filter: blur(6px);
+  z-index: 800;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--deep);
+  border: 1px solid var(--rim);
+  border-radius: 10px;
+  width: 100%; max-width: 540px;
+  max-height: 86vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.modal-box::-webkit-scrollbar { width: 3px; }
+.modal-box::-webkit-scrollbar-thumb { background: var(--rim); }
+.modal-hd {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--rim);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+  position: sticky; top: 0;
+  background: var(--deep);
+}
+.modal-title { font-family: var(--f-display); font-size: 18px; font-weight: 800; color: var(--bone); }
+.modal-title span { color: var(--cyan); }
+.modal-close {
+  background: none; border: none;
+  color: var(--mist); font-size: 22px; line-height: 1;
+  cursor: pointer;
+}
+.modal-close:hover { color: var(--bone); }
+.modal-body { padding: 22px 24px 26px; display: flex; flex-direction: column; gap: 18px; }
+
+.mq-tabs { display: flex; gap: 8px; }
+.mq-tab {
+  flex: 1; padding: 9px 0;
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--mist);
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mq-tab.active { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-dim); }
+.mq-pane { display: none; flex-direction: column; gap: 16px; }
+.mq-pane.active { display: flex; }
+
+.mq-intro-text { font-family: var(--f-body); font-size: 13px; color: var(--bone); opacity: 0.8; line-height: 1.6; }
+.mq-name-input {
+  width: 100%;
+  background: var(--night);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  padding: 11px 13px;
+  color: var(--bone);
+  font-family: var(--f-body);
+  font-size: 13px;
+  outline: none;
+}
+.mq-name-input:focus { border-color: var(--cyan); }
+.mq-start-btn, .mq-cert-btn, .mq-retake-btn {
+  background: var(--cyan);
+  color: var(--night);
+  border: none;
+  border-radius: 4px;
+  padding: 12px 18px;
+  font-family: var(--f-display);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.mq-start-btn:hover, .mq-cert-btn:hover, .mq-retake-btn:hover { opacity: 0.85; }
+.mq-retake-btn { background: var(--slate); color: var(--bone); border: 1px solid var(--rim); }
+
+.mq-progress { font-family: var(--f-mono); font-size: 10px; color: var(--mist); text-align: right; }
+.mq-q { font-family: var(--f-display); font-size: 15px; font-weight: 600; color: var(--bone); line-height: 1.5; }
+.mq-tag {
+  display: inline-block;
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--cyan); background: var(--cyan-dim);
+  border: 1px solid rgba(0,229,200,0.25);
+  border-radius: 3px; padding: 3px 8px;
+  margin-bottom: 4px;
+  width: fit-content;
+}
+
+.mq-result-box { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 0 6px; }
+.mq-result-score { font-family: var(--f-display); font-size: 42px; font-weight: 800; color: var(--cyan); }
+.mq-result-label { font-family: var(--f-mono); font-size: 11px; color: var(--mist); letter-spacing: 0.08em; text-transform: uppercase; }
+.mq-result-msg { font-family: var(--f-body); font-size: 13px; color: var(--bone); opacity: 0.8; text-align: center; max-width: 340px; }
+.mq-result-actions { display: flex; gap: 10px; width: 100%; margin-top: 8px; }
+.mq-result-actions > * { flex: 1; }
+
+.mq-history-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+.mq-history-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--slate); border: 1px solid var(--rim); border-radius: 6px;
+  padding: 10px 14px;
+}
+.mq-h-name { font-family: var(--f-display); font-size: 12px; font-weight: 700; color: var(--bone); }
+.mq-h-date { font-family: var(--f-mono); font-size: 9px; color: var(--mist); margin-top: 2px; }
+.mq-h-score { font-family: var(--f-mono); font-size: 14px; color: var(--cyan); font-weight: 700; }
+.mq-clear-btn {
+  align-self: flex-start;
+  font-family: var(--f-mono); font-size: 10px; color: var(--red);
+  background: none; border: 1px solid rgba(230,57,70,0.3); border-radius: 4px;
+  padding: 6px 12px; cursor: pointer;
+}
+.mq-clear-btn:hover { background: var(--red-dim); }
+
+/* ── CERTIFICATE (print-only) ─────────────────────────────────── */
+.certificate { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  .certificate, .certificate * { visibility: visible; }
+  .certificate {
+    display: block !important;
+    position: absolute; top: 0; left: 0; width: 100%;
+  }
+}
+.certificate {
+  padding: 60px;
+  border: 6px double #1c3248;
+  text-align: center;
+  font-family: var(--f-body);
+  color: #06090f;
+}
+.cert-eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: #7a9ab0; }
+.cert-title { font-family: var(--f-display); font-size: 44px; font-weight: 800; margin: 14px 0 30px; }
+.cert-sub { font-size: 14px; color: #2a3f52; }
+.cert-name { font-family: var(--f-display); font-size: 32px; font-weight: 700; margin: 14px 0; color: #00918a; }
+.cert-body { font-size: 15px; line-height: 1.8; max-width: 560px; margin: 0 auto 26px; color: #142030; }
+.cert-score { font-family: var(--f-mono); font-size: 20px; font-weight: 700; margin-bottom: 30px; }
+.cert-footer { display: flex; justify-content: space-between; margin-top: 40px; font-family: var(--f-mono); font-size: 11px; color: #2a3f52; }
 </style>
 </head>
 <body>
@@ -876,8 +1152,13 @@ header {
     <svg class="hdr-ecg" viewBox="0 0 1200 2" preserveAspectRatio="none">
       <line class="hdr-ecg-line" x1="0" y1="1" x2="1200" y2="1"/>
     </svg>
+    <div class="hdr-progress-wrap">
+      <div class="hdr-progress-track"><div class="hdr-progress-bar" id="hdrProgressBar"></div></div>
+      <div class="hdr-progress-label" id="hdrProgressLabel">0 / 7 EXPLORED</div>
+    </div>
     <div class="hdr-right">
       <div class="hdr-pill">7 MODELS</div>
+      <button class="hdr-btn" onclick="openMasterQuiz()">🎓 Master Quiz</button>
       <button class="hdr-btn" id="audioToggleBtn" onclick="toggleGlobalAudio()">🔊 Audio</button>
       <button class="hdr-btn" onclick="toggleGrid()" id="gridBtn">⊞ Grid</button>
     </div>
@@ -887,7 +1168,12 @@ header {
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sb-section">Anatomy Systems</div>
+      <div class="sb-search-wrap">
+        <input type="text" class="sb-search" id="sbSearch" placeholder="Search organs or systems…" oninput="applyFilter()">
+      </div>
+      <div class="sb-filters" id="sbFilters"></div>
       <div class="sb-list" id="sbList"></div>
+      <div class="sb-empty" id="sbEmpty">No systems match your search.</div>
     </aside>
 
     <!-- VIEWER -->
@@ -931,9 +1217,21 @@ header {
         <div class="tb-sep"></div>
         <button class="tb-btn" title="Wireframe" onclick="toggleWire()" id="btnWire">⬡</button>
         <button class="tb-btn" title="Explode View" onclick="toggleExplode()" id="btnExp">✦</button>
+        <button class="tb-btn" title="Cross-Section X-Ray" onclick="toggleXray()" id="btnXray">◐</button>
         <div class="tb-sep"></div>
         <button class="tb-btn" onclick="zoomIn()">+</button>
         <button class="tb-btn" onclick="zoomOut()">−</button>
+      </div>
+
+      <!-- Cross-section panel -->
+      <div class="xray-panel" id="xrayPanel">
+        <div class="xray-row"><span>Cross-Section</span><span class="val" id="xrayVal">0%</span></div>
+        <input type="range" class="xray-slider" id="xraySlider" min="-150" max="150" value="0" oninput="setClipPlane(this.value)">
+        <div class="xray-axis-row">
+          <button class="xray-axis-btn on" id="axisX" onclick="setClipAxis('x')">X</button>
+          <button class="xray-axis-btn" id="axisY" onclick="setClipAxis('y')">Y</button>
+          <button class="xray-axis-btn" id="axisZ" onclick="setClipAxis('z')">Z</button>
+        </div>
       </div>
 
       <!-- Hints -->
@@ -1021,6 +1319,75 @@ header {
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- MASTER QUIZ MODAL -->
+<div class="modal-overlay" id="mqOverlay" onclick="if(event.target===this) closeMasterQuiz()">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <div class="modal-title">CORPUS <span>Master Quiz</span></div>
+      <button class="modal-close" onclick="closeMasterQuiz()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="mq-tabs">
+        <button class="mq-tab active" id="mqTabTake" onclick="switchMqTab('take')">Take Exam</button>
+        <button class="mq-tab" id="mqTabHistory" onclick="switchMqTab('history')">History</button>
+      </div>
+
+      <!-- TAKE EXAM -->
+      <div class="mq-pane active" id="mq-pane-take">
+
+        <div id="mqIntro">
+          <div class="mq-intro-text">
+            A full system exam pulling questions at random from every organ and system in the atlas. Score 70% or higher to unlock a printable certificate of completion.
+          </div>
+          <input type="text" class="mq-name-input" id="mqNameInput" placeholder="Enter your name (for the certificate)" style="margin-top:14px;">
+          <button class="mq-start-btn" style="margin-top:14px;width:100%" onclick="startMasterQuiz()">Start Full Exam →</button>
+        </div>
+
+        <div id="mqQuizArea" style="display:none;">
+          <div class="mq-progress" id="mqProgress">Question 1 / 14 · Score: 0</div>
+          <div class="mq-tag" id="mqTag">—</div>
+          <div class="mq-q" id="mqQ">Loading question…</div>
+          <div class="quiz-options" id="mqOpts"></div>
+          <div class="quiz-result" id="mqResult"></div>
+          <button class="quiz-next" id="mqNext" onclick="mqNextQuestion()">Next Question →</button>
+        </div>
+
+        <div id="mqDone" style="display:none;">
+          <div class="mq-result-box">
+            <div class="mq-result-score" id="mqFinalScore">0/0</div>
+            <div class="mq-result-label">Final Score</div>
+            <div class="mq-result-msg" id="mqFinalMsg">—</div>
+            <div class="mq-result-actions">
+              <button class="mq-retake-btn" onclick="startMasterQuiz()">Retake Exam</button>
+              <button class="mq-cert-btn" id="mqCertBtn" onclick="generateCertificate()">Download Certificate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="mq-pane" id="mq-pane-history">
+        <div class="mq-history-list" id="mqHistoryList"></div>
+        <button class="mq-clear-btn" onclick="clearMqHistory()">Clear History</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINTABLE CERTIFICATE -->
+<div class="certificate" id="certificate">
+  <div class="cert-eyebrow">CORPUS · Interactive Medical Atlas</div>
+  <div class="cert-title">Certificate of Completion</div>
+  <div class="cert-sub">This certifies that</div>
+  <div class="cert-name" id="certName">—</div>
+  <div class="cert-body">has successfully completed the CORPUS Human Anatomy Master Quiz, demonstrating a comprehensive understanding of the musculoskeletal, cardiovascular, respiratory, and gastrointestinal systems of the human body.</div>
+  <div class="cert-score" id="certScore">—</div>
+  <div class="cert-footer">
+    <span id="certDate">—</span>
+    <span>CORPUS Human Anatomy Atlas</span>
+  </div>
+</div>
 
 <script type="importmap">
 {
@@ -1192,6 +1559,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.3;
+renderer.localClippingEnabled = true;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x06090f);
@@ -1348,23 +1716,136 @@ let quizScore = 0;
 let quizAnswered = false;
 let currentTab = 'overview';
 
+// ── CROSS-SECTION / X-RAY STATE ─────────────────────────────────────
+let xrayOn = false;
+let clipAxis = 'x';
+const clipPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+const clipNormals = {
+  x: new THREE.Vector3(1, 0, 0),
+  y: new THREE.Vector3(0, 1, 0),
+  z: new THREE.Vector3(0, 0, 1)
+};
+
+function applyClipping(model) {
+  if (!model) return;
+  model.traverse(o => {
+    if (o.isMesh) {
+      [].concat(o.material).forEach(m => {
+        m.clippingPlanes = xrayOn ? [clipPlane] : null;
+        m.clipShadows = true;
+        m.side = xrayOn ? THREE.DoubleSide : THREE.FrontSide;
+        m.needsUpdate = true;
+      });
+    }
+  });
+}
+
+window.toggleXray = function() {
+  if (!currentModel) return;
+  xrayOn = !xrayOn;
+  applyClipping(currentModel);
+  document.getElementById('btnXray').classList.toggle('on', xrayOn);
+  document.getElementById('xrayPanel').classList.toggle('show', xrayOn);
+  showToast(xrayOn ? 'Cross-section on' : 'Cross-section off');
+};
+
+window.setClipPlane = function(v) {
+  const pct = Number(v) / 150; // -1..1
+  clipPlane.constant = -pct * 1.6;
+  document.getElementById('xrayVal').textContent = Math.round(pct * 100) + '%';
+};
+
+window.setClipAxis = function(axis) {
+  clipAxis = axis;
+  clipPlane.normal.copy(clipNormals[axis]);
+  ['x','y','z'].forEach(a => document.getElementById('axis' + a.toUpperCase()).classList.toggle('on', a === axis));
+  const slider = document.getElementById('xraySlider');
+  setClipPlane(slider.value);
+};
+
 // ── BUILD SIDEBAR ─────────────────────────────────────────────────
 const sbList = document.getElementById('sbList');
 ORGANS.forEach(o => {
   const el = document.createElement('div');
   el.className = 'organ-card';
   el.id = `card-${o.id}`;
+  el.dataset.name = o.name.toLowerCase();
+  el.dataset.system = o.system;
   el.innerHTML = `
     <div class="oc-glyph" style="background:${o.color}22;border:1px solid ${o.color}44">${o.icon}</div>
     <div class="oc-text">
       <span class="oc-name">${o.name}</span>
       <span class="oc-sys">${o.system}</span>
     </div>
+    <div class="oc-check">✓</div>
     <div class="oc-active-dot"></div>
   `;
   el.onclick = () => selectOrgan(o);
   sbList.appendChild(el);
 });
+
+// ── SEARCH / FILTER ──────────────────────────────────────────────
+let activeSystemFilter = 'All';
+const systems = ['All', ...new Set(ORGANS.map(o => o.system))];
+const sbFilters = document.getElementById('sbFilters');
+systems.forEach(sys => {
+  const chip = document.createElement('button');
+  chip.className = 'sb-chip' + (sys === 'All' ? ' active' : '');
+  chip.textContent = sys;
+  chip.onclick = () => {
+    activeSystemFilter = sys;
+    document.querySelectorAll('.sb-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    applyFilter();
+  };
+  sbFilters.appendChild(chip);
+});
+
+window.applyFilter = function() {
+  const term = document.getElementById('sbSearch').value.trim().toLowerCase();
+  let visibleCount = 0;
+  ORGANS.forEach(o => {
+    const card = document.getElementById(`card-${o.id}`);
+    const matchesText = !term || card.dataset.name.includes(term) || card.dataset.system.toLowerCase().includes(term);
+    const matchesSystem = activeSystemFilter === 'All' || card.dataset.system === activeSystemFilter;
+    const visible = matchesText && matchesSystem;
+    card.style.display = visible ? '' : 'none';
+    if (visible) visibleCount++;
+  });
+  document.getElementById('sbEmpty').style.display = visibleCount === 0 ? 'block' : 'none';
+};
+
+// ── PROGRESS TRACKING (localStorage) ─────────────────────────────
+function getViewedSet() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem('corpus_viewed_organs') || '[]'));
+  } catch (e) { return new Set(); }
+}
+function saveViewedSet(set) {
+  try { localStorage.setItem('corpus_viewed_organs', JSON.stringify([...set])); } catch (e) {}
+}
+function updateProgressUI() {
+  const viewed = getViewedSet();
+  const total = ORGANS.length;
+  const count = [...viewed].filter(id => ORGANS.some(o => o.id === id)).length;
+  document.getElementById('hdrProgressBar').style.width = (count / total * 100) + '%';
+  document.getElementById('hdrProgressLabel').textContent = `${count} / ${total} EXPLORED`;
+  ORGANS.forEach(o => {
+    const card = document.getElementById(`card-${o.id}`);
+    card.classList.toggle('viewed', viewed.has(o.id));
+  });
+}
+function markOrganViewed(id) {
+  const viewed = getViewedSet();
+  const wasNew = !viewed.has(id);
+  viewed.add(id);
+  saveViewedSet(viewed);
+  updateProgressUI();
+  if (wasNew && viewed.size === ORGANS.length) {
+    setTimeout(() => showToast('🎉 All systems explored! Try the Master Quiz.'), 1200);
+  }
+}
+updateProgressUI();
 
 // ── GLTF LOADING ──────────────────────────────────────────────────
 let GLTFLoader, DRACOLoader;
@@ -1440,9 +1921,14 @@ async function selectOrgan(organ) {
     wireframe = false; exploded = false;
     document.getElementById('btnWire').classList.remove('on');
     document.getElementById('btnExp').classList.remove('on');
+    document.getElementById('xraySlider').value = 0;
+    setClipPlane(0);
+    applyClipping(currentModel);
 
     oc.reset(4.5);
     grid.position.y = -box.getSize(new THREE.Vector3()).y * sc * 0.5 - 0.3;
+
+    markOrganViewed(organ.id);
 
     // Hide loading
     vl.classList.add('gone');
@@ -1700,6 +2186,157 @@ window.enterApp = function() {
     document.getElementById('particles').style.display = 'none';
   }, 800);
   document.getElementById('app').classList.add('visible');
+};
+
+// ── MASTER QUIZ ───────────────────────────────────────────────────
+let mqData = [];
+let mqIdx = 0;
+let mqScore = 0;
+let mqAnswered = false;
+const MQ_QUESTIONS_PER_ORGAN = 2;
+
+function buildMasterQuizPool() {
+  let pool = [];
+  ORGANS.forEach(o => {
+    const picked = [...o.quiz].sort(() => Math.random() - 0.5).slice(0, MQ_QUESTIONS_PER_ORGAN);
+    picked.forEach(q => pool.push({ ...q, system: o.system, organName: o.name }));
+  });
+  return pool.sort(() => Math.random() - 0.5);
+}
+
+window.openMasterQuiz = function() {
+  document.getElementById('mqOverlay').classList.add('show');
+  switchMqTab('take');
+  document.getElementById('mqIntro').style.display = 'block';
+  document.getElementById('mqQuizArea').style.display = 'none';
+  document.getElementById('mqDone').style.display = 'none';
+};
+
+window.closeMasterQuiz = function() {
+  document.getElementById('mqOverlay').classList.remove('show');
+};
+
+window.switchMqTab = function(name) {
+  document.getElementById('mqTabTake').classList.toggle('active', name === 'take');
+  document.getElementById('mqTabHistory').classList.toggle('active', name === 'history');
+  document.getElementById('mq-pane-take').classList.toggle('active', name === 'take');
+  document.getElementById('mq-pane-history').classList.toggle('active', name === 'history');
+  if (name === 'history') renderMqHistory();
+};
+
+window.startMasterQuiz = function() {
+  mqData = buildMasterQuizPool();
+  mqIdx = 0; mqScore = 0; mqAnswered = false;
+  document.getElementById('mqIntro').style.display = 'none';
+  document.getElementById('mqDone').style.display = 'none';
+  document.getElementById('mqQuizArea').style.display = 'block';
+  renderMqQuestion();
+};
+
+function renderMqQuestion() {
+  if (mqIdx >= mqData.length) {
+    finishMasterQuiz();
+    return;
+  }
+  const q = mqData[mqIdx];
+  document.getElementById('mqProgress').textContent = `Question ${mqIdx + 1} / ${mqData.length} · Score: ${mqScore}`;
+  document.getElementById('mqTag').textContent = q.organName + ' · ' + q.system;
+  document.getElementById('mqQ').textContent = q.q;
+  document.getElementById('mqOpts').innerHTML = q.opts.map((o, i) => `
+    <button class="quiz-opt" onclick="mqAnswer(${i})">${o}</button>
+  `).join('');
+  document.getElementById('mqResult').style.display = 'none';
+  document.getElementById('mqNext').style.display = 'none';
+  mqAnswered = false;
+}
+
+window.mqAnswer = function(idx) {
+  if (mqAnswered) return;
+  mqAnswered = true;
+  const q = mqData[mqIdx];
+  const opts = document.querySelectorAll('#mqOpts .quiz-opt');
+  const res = document.getElementById('mqResult');
+  if (idx === q.a) {
+    opts[idx].classList.add('correct');
+    mqScore++;
+    res.textContent = '✓ Correct!';
+    res.style.color = 'var(--cyan)';
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[q.a].classList.add('correct');
+    res.textContent = `✗ The answer is: ${q.opts[q.a]}`;
+    res.style.color = 'var(--red)';
+  }
+  res.style.display = 'block';
+  document.getElementById('mqNext').style.display = 'block';
+  document.getElementById('mqProgress').textContent = `Question ${mqIdx + 1} / ${mqData.length} · Score: ${mqScore}`;
+};
+
+window.mqNextQuestion = function() {
+  mqIdx++;
+  renderMqQuestion();
+};
+
+function finishMasterQuiz() {
+  document.getElementById('mqQuizArea').style.display = 'none';
+  document.getElementById('mqDone').style.display = 'block';
+  const pct = Math.round((mqScore / mqData.length) * 100);
+  document.getElementById('mqFinalScore').textContent = `${mqScore}/${mqData.length}`;
+  let msg;
+  if (pct >= 90) msg = 'Outstanding! You have mastered the human anatomy atlas.';
+  else if (pct >= 70) msg = 'Great work! You have a solid grasp of the material.';
+  else if (pct >= 50) msg = 'Good effort. Review a few systems and try again.';
+  else msg = 'Keep exploring the systems, then retake the exam.';
+  document.getElementById('mqFinalMsg').textContent = `${pct}% — ${msg}`;
+  document.getElementById('mqCertBtn').style.display = pct >= 70 ? 'block' : 'none';
+  saveMqHistory(pct);
+}
+
+function saveMqHistory(pct) {
+  const name = document.getElementById('mqNameInput').value.trim() || 'Anatomy Explorer';
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('corpus_quiz_history') || '[]'); } catch (e) {}
+  history.unshift({
+    name, score: mqScore, total: mqData.length, pct,
+    date: new Date().toISOString()
+  });
+  history = history.slice(0, 25);
+  try { localStorage.setItem('corpus_quiz_history', JSON.stringify(history)); } catch (e) {}
+}
+
+function renderMqHistory() {
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('corpus_quiz_history') || '[]'); } catch (e) {}
+  const list = document.getElementById('mqHistoryList');
+  if (!history.length) {
+    list.innerHTML = '<div class="mq-intro-text">No attempts yet — take the Master Quiz to see your history here.</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => {
+    const d = new Date(h.date);
+    return `
+    <div class="mq-history-item">
+      <div>
+        <div class="mq-h-name">${h.name}</div>
+        <div class="mq-h-date">${d.toLocaleDateString()} · ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <div class="mq-h-score">${h.score}/${h.total} · ${h.pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+window.clearMqHistory = function() {
+  try { localStorage.removeItem('corpus_quiz_history'); } catch (e) {}
+  renderMqHistory();
+};
+
+window.generateCertificate = function() {
+  const name = document.getElementById('mqNameInput').value.trim() || 'Anatomy Explorer';
+  const pct = Math.round((mqScore / mqData.length) * 100);
+  document.getElementById('certName').textContent = name;
+  document.getElementById('certScore').textContent = `Score: ${mqScore} / ${mqData.length}  (${pct}%)`;
+  document.getElementById('certDate').textContent = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  window.print();
 };
 
 // Pre-load voices
