@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORPUS — Human Anatomy Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────────────────────────
+   Palette: deep midnight navy (#06090f), bioluminescent cyan (#00e5c8),
+   arterial red (#e63946), bone white (#f0eeea), slate (#2a3f52)
+   Signature: a pulsing ECG heartbeat line that traces across the header
+   and echoes as a loading animation — connecting the UI to the subject.
+   Typography: Syne (display, bold geometric) + Instrument Sans (body,
+   humanist) + JetBrains Mono (data/labels) — a trio that reads as
+   medical precision with warmth.
+──────────────────────────────────────────────────────────────────── */
+:root {
+  --night:    #06090f;
+  --deep:     #0a1220;
+  --slate:    #142030;
+  --rim:      #1c3248;
+  --cyan:     #00e5c8;
+  --cyan-dim: rgba(0,229,200,0.12);
+  --red:      #e63946;
+  --red-dim:  rgba(230,57,70,0.15);
+  --bone:     #f0eeea;
+  --mist:     #7a9ab0;
+  --gold:     #f4b942;
+
+  --f-display: 'Syne', sans-serif;
+  --f-body:    'Instrument Sans', sans-serif;
+  --f-mono:    'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--night);
+  color: var(--bone);
+  font-family: var(--f-body);
+}
+
+/* ── INTRO SPLASH ──────────────────────────────────────────────── */
+#intro {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--night);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+#intro.exit {
+  opacity: 0;
+  transform: scale(1.04);
+  pointer-events: none;
+}
+.intro-eyebrow {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.4s forwards;
+}
+.intro-title {
+  font-family: var(--f-display);
+  font-size: clamp(72px, 12vw, 140px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--bone);
+  opacity: 0;
+  animation: fadeUp 0.7s ease 0.7s forwards;
+}
+.intro-title em {
+  font-style: normal;
+  color: var(--cyan);
+  display: block;
+}
+.intro-sub {
+  font-family: var(--f-body);
+  font-size: 15px;
+  color: var(--mist);
+  margin-top: 24px;
+  margin-bottom: 48px;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 1s forwards;
+}
+
+/* ECG line — the signature element */
+.ecg-wrap {
+  width: 320px; height: 60px;
+  opacity: 0;
+  animation: fadeUp 0.5s ease 1.2s forwards;
+  margin-bottom: 48px;
+}
+.ecg-line {
+  stroke: var(--cyan);
+  stroke-width: 1.5;
+  fill: none;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: ecgDraw 1.4s ease 1.4s forwards;
+  filter: drop-shadow(0 0 6px var(--cyan));
+}
+@keyframes ecgDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.intro-btn {
+  font-family: var(--f-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--night);
+  background: var(--cyan);
+  border: none;
+  border-radius: 3px;
+  padding: 14px 40px;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeUp 0.5s ease 2.2s forwards;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.intro-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0,229,200,0.35);
+}
+
+/* particle canvas behind intro */
+#particles { position: fixed; inset: 0; z-index: 999; pointer-events: none; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── MAIN APP ──────────────────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+#app.visible { opacity: 1; }
+
+/* ── HEADER ────────────────────────────────────────────────────── */
+header {
+  height: 58px;
+  background: var(--deep);
+  border-bottom: 1px solid var(--rim);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 0;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.hdr-logo {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--bone);
+}
+.hdr-logo span { color: var(--cyan); }
+.hdr-divider {
+  width: 1px; height: 28px;
+  background: var(--rim);
+  margin: 0 20px;
+}
+.hdr-subtitle {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--mist);
+  text-transform: uppercase;
+}
+
+/* ECG in header — thin ambient line */
+.hdr-ecg {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  overflow: visible;
+  pointer-events: none;
+}
+.hdr-ecg-line {
+  stroke: var(--cyan);
+  stroke-width: 1;
+  fill: none;
+  opacity: 0.3;
+  stroke-dasharray: 8 4;
+  animation: slideRight 6s linear infinite;
+}
+@keyframes slideRight {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -48; }
+}
+
+.hdr-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hdr-pill {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--cyan);
+  background: var(--cyan-dim);
+  border: 1px solid rgba(0,229,200,0.2);
+  border-radius: 2px;
+  padding: 4px 10px;
+}
+.hdr-btn {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--mist);
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 2px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.hdr-btn:hover { color: var(--bone); border-color: var(--mist); }
+.hdr-btn.muted { color: var(--red); border-color: rgba(230,57,70,0.3); }
+
+/* ── BODY LAYOUT ──────────────────────────────────────────────── */
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── LEFT SIDEBAR ─────────────────────────────────────────────── */
+.sidebar {
+  width: 228px;
+  flex-shrink: 0;
+  background: var(--deep);
+  border-right: 1px solid var(--rim);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sb-section {
+  padding: 14px 16px 8px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--mist);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--rim);
+}
+.sb-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+.sb-list::-webkit-scrollbar { width: 3px; }
+.sb-list::-webkit-scrollbar-track { background: transparent; }
+.sb-list::-webkit-scrollbar-thumb { background: var(--rim); }
+
+.organ-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-left: 2px solid transparent;
+  overflow: hidden;
+}
+.organ-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--cyan-dim), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.organ-card:hover::before { opacity: 1; }
+.organ-card.active {
+  border-left-color: var(--cyan);
+  background: var(--cyan-dim);
+}
+.organ-card.active::before { opacity: 1; }
+
+.oc-glyph {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.oc-text { position: relative; z-index: 1; }
+.oc-name {
+  font-family: var(--f-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bone);
+  display: block;
+  letter-spacing: 0.01em;
+}
+.oc-sys {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--mist);
+  display: block;
+  margin-top: 2px;
+  letter-spacing: 0.06em;
+}
+.oc-active-dot {
+  width: 5px; height: 5px;
+  background: var(--cyan);
+  border-radius: 50%;
+  margin-left: auto;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+  animation: pulse 1.5s ease infinite;
+  display: none;
+}
+.organ-card.active .oc-active-dot { display: block; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── 3D VIEWER ────────────────────────────────────────────────── */
+.viewer {
+  flex: 1;
+  position: relative;
+  background: var(--night);
+  overflow: hidden;
+}
+#cv { width: 100%; height: 100%; display: block; }
+
+/* Loading overlay */
+.v-loading {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+  background: var(--night);
+  z-index: 20;
+  transition: opacity 0.5s;
+}
+.v-loading.gone { opacity: 0; pointer-events: none; }
+
+.ecg-loader {
+  width: 200px; height: 50px;
+}
+.ecg-loader-line {
+  stroke: var(--cyan);
+  stroke-width: 2;
+  fill: none;
+  filter: drop-shadow(0 0 8px var(--cyan));
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: ecgLoad 1.2s ease-in-out infinite;
+}
+@keyframes ecgLoad {
+  0%   { stroke-dashoffset: 400; opacity: 1; }
+  70%  { stroke-dashoffset: 0;   opacity: 1; }
+  100% { stroke-dashoffset: 0;   opacity: 0; }
+}
+
+.vl-organ { font-family: var(--f-display); font-size: 28px; font-weight: 800; color: var(--cyan); }
+.vl-msg { font-family: var(--f-mono); font-size: 11px; color: var(--mist); letter-spacing: 0.1em; }
+
+/* Welcome */
+.v-welcome {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+.v-welcome.gone { display: none; }
+.vw-cross {
+  width: 80px; height: 80px;
+  opacity: 0.06;
+}
+.vw-title {
+  font-family: var(--f-display);
+  font-size: 18px; font-weight: 700;
+  color: var(--bone); opacity: 0.2;
+  letter-spacing: 0.04em;
+}
+.vw-sub {
+  font-family: var(--f-body);
+  font-size: 13px;
+  color: var(--mist);
+  opacity: 0.4;
+  text-align: center;
+  max-width: 240px;
+  line-height: 1.6;
+}
+
+/* HUD overlays */
+.v-hud-tl {
+  position: absolute; top: 16px; left: 16px;
+  display: none; flex-direction: column; gap: 6px;
+}
+.hud-chip {
+  font-family: var(--f-mono);
+  font-size: 10px; letter-spacing: 0.1em;
+  color: var(--mist);
+  background: rgba(6,9,15,0.75);
+  border: 1px solid var(--rim);
+  border-radius: 2px;
+  padding: 5px 10px;
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; gap: 7px;
+}
+.hud-chip .dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: pulse 1.5s ease infinite;
+}
+
+/* Toolbar */
+.v-toolbar {
+  position: absolute;
+  right: 16px; top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+}
+.tb-btn {
+  width: 38px; height: 38px;
+  background: rgba(10,18,32,0.85);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  color: var(--mist);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s;
+  font-family: var(--f-mono);
+}
+.tb-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.tb-btn.on { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.tb-sep { height: 1px; background: var(--rim); margin: 2px 0; }
+
+/* Controls hint */
+.v-hints {
+  position: absolute;
+  bottom: 16px; left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 10px;
+}
+.vh-item {
+  font-family: var(--f-mono);
+  font-size: 10px; letter-spacing: 0.06em;
+  color: var(--mist);
+  background: rgba(6,9,15,0.7);
+  border: 1px solid var(--rim);
+  border-radius: 2px;
+  padding: 4px 10px;
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; gap: 6px;
+}
+.vh-key {
+  background: var(--rim);
+  border-radius: 2px;
+  padding: 1px 5px;
+  color: var(--bone);
+  font-size: 9px;
+}
+
+/* ── RIGHT INFO PANEL ─────────────────────────────────────────── */
+.info {
+  width: 310px;
+  flex-shrink: 0;
+  background: var(--deep);
+  border-left: 1px solid var(--rim);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.info-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  text-align: center;
+}
+.ie-icon { font-size: 36px; opacity: 0.12; }
+.ie-text { font-family: var(--f-body); font-size: 13px; color: var(--mist); line-height: 1.6; }
+
+.info-content {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Info header */
+.ih {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--rim);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.ih-glow {
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: var(--cyan);
+  filter: blur(50px);
+  opacity: 0.06;
+  pointer-events: none;
+}
+.ih-sys {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.ih-name {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--bone);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--rim);
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1;
+  padding: 10px 0;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mist);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.tab:hover { color: var(--bone); }
+.tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+/* Tab panes */
+.tab-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.tab-body::-webkit-scrollbar { width: 3px; }
+.tab-body::-webkit-scrollbar-track { background: transparent; }
+.tab-body::-webkit-scrollbar-thumb { background: var(--rim); }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: flex; flex-direction: column; gap: 20px; }
+
+/* Section label */
+.sec-lbl {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist);
+  margin-bottom: 10px;
+}
+
+/* Overview text */
+.overview-text {
+  font-family: var(--f-body);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--bone);
+  opacity: 0.82;
+}
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.stat-card {
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  padding: 12px;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: rgba(0,229,200,0.3); }
+.stat-val {
+  font-family: var(--f-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cyan);
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.stat-lbl {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--mist);
+}
+
+/* Functions */
+.fn-list { display: flex; flex-direction: column; gap: 8px; }
+.fn-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-family: var(--f-body);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--bone);
+  opacity: 0.8;
+}
+.fn-bar {
+  width: 2px;
+  min-height: 16px;
+  background: var(--cyan);
+  border-radius: 1px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* Did you know */
+.fact-list { display: flex; flex-direction: column; gap: 10px; }
+.fact-item {
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-left: 2px solid var(--gold);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-family: var(--f-body);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--bone);
+  opacity: 0.82;
+}
+
+/* Audio panel */
+.audio-panel {
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 6px;
+  padding: 16px;
+}
+.ap-label {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist);
+  margin-bottom: 12px;
+}
+.ap-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--night);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  padding: 10px 14px;
+  cursor: pointer;
+  color: var(--bone);
+  font-family: var(--f-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: all 0.2s;
+}
+.ap-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.ap-btn.playing { border-color: var(--red); background: var(--red-dim); }
+.ap-icon { font-size: 14px; }
+.ap-wave {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  height: 18px;
+}
+.ap-wave.on { display: flex; }
+.ap-wave span {
+  display: block;
+  width: 3px;
+  background: var(--red);
+  border-radius: 2px;
+  animation: apWave 0.6s ease-in-out infinite;
+  height: 4px;
+}
+.ap-wave span:nth-child(2) { animation-delay: 0.1s; }
+.ap-wave span:nth-child(3) { animation-delay: 0.2s; }
+.ap-wave span:nth-child(4) { animation-delay: 0.3s; }
+.ap-wave span:nth-child(5) { animation-delay: 0.4s; }
+@keyframes apWave {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+.ap-status {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--mist);
+  margin-top: 8px;
+}
+
+/* Progress bar on audio */
+.ap-progress {
+  height: 2px;
+  background: var(--rim);
+  border-radius: 1px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.ap-progress-bar {
+  height: 100%;
+  background: var(--cyan);
+  width: 0%;
+  border-radius: 1px;
+  transition: width 0.3s linear;
+}
+
+/* Quizlet */
+.quiz-wrap { display: flex; flex-direction: column; gap: 12px; }
+.quiz-q {
+  font-family: var(--f-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bone);
+  line-height: 1.5;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 7px; }
+.quiz-opt {
+  background: var(--slate);
+  border: 1px solid var(--rim);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: var(--f-body);
+  font-size: 12px;
+  color: var(--bone);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+.quiz-opt:hover { border-color: var(--cyan); color: var(--cyan); }
+.quiz-opt.correct { border-color: #00e5c8; background: rgba(0,229,200,0.12); color: var(--cyan); }
+.quiz-opt.wrong   { border-color: var(--red); background: var(--red-dim); color: var(--red); }
+.quiz-result {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--mist);
+  display: none;
+}
+.quiz-next {
+  background: var(--cyan);
+  color: var(--night);
+  border: none;
+  border-radius: 3px;
+  padding: 9px 18px;
+  font-family: var(--f-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: none;
+  width: 100%;
+  transition: all 0.2s;
+}
+.quiz-next:hover { opacity: 0.85; }
+.quiz-score {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--mist);
+  text-align: right;
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--deep);
+  border: 1px solid var(--rim);
+  border-left: 2px solid var(--cyan);
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--mist);
+  letter-spacing: 0.06em;
+  z-index: 500;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="particles"></canvas>
+
+<!-- INTRO SPLASH -->
+<div id="intro">
+  <div class="intro-eyebrow">Interactive Medical Atlas · 2025</div>
+  <div class="intro-title">COR<em>PUS</em></div>
+  <div class="intro-sub">Seven systems. One body. Explore the human form in 3D.</div>
+  <div class="ecg-wrap">
+    <svg viewBox="0 0 320 60" xmlns="http://www.w3.org/2000/svg">
+      <polyline class="ecg-line" points="
+        0,30 30,30 40,30 50,10 58,50 65,30 80,30
+        90,30 100,30 110,8 118,52 125,30 140,30
+        150,30 160,30 170,12 178,50 185,30 200,30
+        210,30 220,30 230,10 238,50 245,30 260,30
+        270,30 280,30 290,12 298,50 305,30 320,30
+      "/>
+    </svg>
+  </div>
+  <button class="intro-btn" onclick="enterApp()">Begin Exploration →</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="hdr-logo">COR<span>PUS</span></div>
+    <div class="hdr-divider"></div>
+    <div class="hdr-subtitle">Human Anatomy Atlas</div>
+    <svg class="hdr-ecg" viewBox="0 0 1200 2" preserveAspectRatio="none">
+      <line class="hdr-ecg-line" x1="0" y1="1" x2="1200" y2="1"/>
+    </svg>
+    <div class="hdr-right">
+      <div class="hdr-pill">7 MODELS</div>
+      <button class="hdr-btn" id="audioToggleBtn" onclick="toggleGlobalAudio()">🔊 Audio</button>
+      <button class="hdr-btn" onclick="toggleGrid()" id="gridBtn">⊞ Grid</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-section">Anatomy Systems</div>
+      <div class="sb-list" id="sbList"></div>
+    </aside>
+
+    <!-- VIEWER -->
+    <div class="viewer">
+      <canvas id="cv"></canvas>
+
+      <!-- Loading -->
+      <div class="v-loading" id="vLoading">
+        <div class="vl-organ" id="vlName">—</div>
+        <svg class="ecg-loader" viewBox="0 0 200 50">
+          <polyline class="ecg-loader-line" points="
+            0,25 20,25 30,25 38,5 44,45 50,25 65,25
+            75,25 85,25 93,5 99,45 105,25 120,25
+            130,25 140,25 148,5 154,45 160,25 175,25
+            185,25 195,25
+          "/>
+        </svg>
+        <div class="vl-msg" id="vlMsg">Initialising 3D renderer…</div>
+      </div>
+
+      <!-- Welcome -->
+      <div class="v-welcome" id="vWelcome">
+        <svg class="vw-cross" viewBox="0 0 80 80">
+          <rect x="30" y="0" width="20" height="80" rx="4" fill="currentColor"/>
+          <rect x="0" y="30" width="80" height="20" rx="4" fill="currentColor"/>
+        </svg>
+        <div class="vw-title">SELECT A SYSTEM</div>
+        <div class="vw-sub">Choose any organ or system from the left panel to load its 3D model.</div>
+      </div>
+
+      <!-- HUD top-left -->
+      <div class="v-hud-tl" id="vHud">
+        <div class="hud-chip"><span class="dot"></span><span id="hudName">—</span></div>
+        <div class="hud-chip" id="hudSys">—</div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="v-toolbar" id="vToolbar">
+        <button class="tb-btn" title="Reset Camera" onclick="resetCam()">⟳</button>
+        <button class="tb-btn on" title="Auto-Rotate" onclick="toggleRotate()" id="btnRot">↻</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" title="Wireframe" onclick="toggleWire()" id="btnWire">⬡</button>
+        <button class="tb-btn" title="Explode View" onclick="toggleExplode()" id="btnExp">✦</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" onclick="zoomIn()">+</button>
+        <button class="tb-btn" onclick="zoomOut()">−</button>
+      </div>
+
+      <!-- Hints -->
+      <div class="v-hints" id="vHints">
+        <div class="vh-item"><span class="vh-key">Drag</span>Rotate</div>
+        <div class="vh-item"><span class="vh-key">Scroll</span>Zoom</div>
+        <div class="vh-item"><span class="vh-key">Right-drag</span>Pan</div>
+      </div>
+    </div>
+
+    <!-- INFO PANEL -->
+    <aside class="info">
+      <div class="info-empty" id="infoEmpty">
+        <div class="ie-icon">🔬</div>
+        <div class="ie-text">Select a system<br>to view anatomy details,<br>stats, and a quiz.</div>
+      </div>
+
+      <div class="info-content" id="infoContent">
+        <div class="ih">
+          <div class="ih-glow"></div>
+          <div class="ih-sys" id="ihSys">—</div>
+          <div class="ih-name" id="ihName">—</div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
+          <button class="tab" onclick="switchTab('functions',this)">Functions</button>
+          <button class="tab" onclick="switchTab('quiz',this)">Quiz</button>
+        </div>
+
+        <div class="tab-body" id="tabBody">
+          <!-- OVERVIEW -->
+          <div class="tab-pane active" id="pane-overview">
+            <!-- Audio -->
+            <div class="audio-panel">
+              <div class="ap-label">Audio Narration</div>
+              <button class="ap-btn" id="apBtn" onclick="toggleAudio()">
+                <span class="ap-icon" id="apIcon">▶</span>
+                <span id="apLabel">Play narration</span>
+                <div class="ap-wave" id="apWave">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </button>
+              <div class="ap-progress"><div class="ap-progress-bar" id="apBar"></div></div>
+              <div class="ap-status" id="apStatus">Web Speech API · no download required</div>
+            </div>
+
+            <div>
+              <div class="sec-lbl">Overview</div>
+              <div class="overview-text" id="ovText">—</div>
+            </div>
+
+            <div>
+              <div class="sec-lbl">Key Metrics</div>
+              <div class="stats-grid" id="statsGrid"></div>
+            </div>
+          </div>
+
+          <!-- FUNCTIONS -->
+          <div class="tab-pane" id="pane-functions">
+            <div>
+              <div class="sec-lbl">Primary Functions</div>
+              <div class="fn-list" id="fnList"></div>
+            </div>
+            <div>
+              <div class="sec-lbl">Did You Know?</div>
+              <div class="fact-list" id="factList"></div>
+            </div>
+          </div>
+
+          <!-- QUIZ -->
+          <div class="tab-pane" id="pane-quiz">
+            <div class="quiz-wrap">
+              <div class="quiz-score" id="quizScore">Score: 0 / 0</div>
+              <div class="quiz-q" id="quizQ">Loading question…</div>
+              <div class="quiz-options" id="quizOpts"></div>
+              <div class="quiz-result" id="quizResult"></div>
+              <button class="quiz-next" id="quizNext" onclick="nextQuestion()">Next Question →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ── PARTICLE INTRO ────────────────────────────────────────────────
+(function initParticles() {
+  const c = document.getElementById('particles');
+  const ctx = c.getContext('2d');
+  let W, H, particles = [];
+  function resize() {
+    W = c.width = window.innerWidth;
+    H = c.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  for (let i = 0; i < 70; i++) {
+    particles.push({
+      x: Math.random() * 1920, y: Math.random() * 1080,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.3,
+      a: Math.random() * 0.4 + 0.05
+    });
+  }
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,229,200,${p.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ── DATA ──────────────────────────────────────────────────────────
+const ORGANS = [
+  {
+    id: 'human_skeleton', name: 'Skeleton', system: 'Musculoskeletal',
+    icon: '🦴', color: '#c8d8e8',
+    path: 'models/human_skeleton/scene.gltf',
+    overview: 'The human skeleton is the internal framework of the body, composed of around 206 bones in adults. It provides structure, protects vital organs, enables movement through muscle attachment, produces blood cells in the bone marrow, and stores minerals like calcium and phosphorus.',
+    stats: [['206','Bones (adult)'],['270','Bones (infant)'],['~15%','Body weight'],['2M/sec','RBCs produced']],
+    functions: ['Provides structural support and shape to the body','Protects vital organs — brain, heart, lungs, spinal cord','Produces red and white blood cells inside bone marrow','Stores calcium and phosphorus as mineral reserves','Anchors muscles via tendons to enable coordinated movement'],
+    facts: ['The femur is the longest and strongest bone in the body.','Bones are living tissue — they constantly remodel throughout life.','Your skeleton completely replaces itself roughly every 10 years.'],
+    audio: 'The human skeleton is an incredible framework of two hundred and six bones that gives your body its shape and strength. It protects your brain, heart and lungs, produces millions of blood cells every second inside the bone marrow, and stores vital minerals like calcium. Remarkably, your entire skeleton replaces itself roughly once every ten years.',
+    quiz: [
+      { q: 'How many bones does an adult human have?', opts: ['186','206','226','246'], a: 1 },
+      { q: 'Which is the longest bone in the human body?', opts: ['Humerus','Radius','Femur','Tibia'], a: 2 },
+      { q: 'Where does blood cell production occur?', opts: ['Cartilage','Bone marrow','Periosteum','Tendons'], a: 1 },
+      { q: 'What minerals do bones primarily store?', opts: ['Iron and zinc','Calcium and phosphorus','Magnesium and potassium','Sodium and chloride'], a: 1 },
+    ]
+  },
+  {
+    id: 'human_heart_3d_model', name: 'Heart', system: 'Cardiovascular',
+    icon: '🫀', color: '#e05555',
+    path: 'models/human_heart_3d_model/scene.gltf',
+    overview: 'The heart is a muscular organ about the size of a fist, located slightly left of centre in the chest. It beats roughly 100,000 times a day, pumping about 7,570 litres of blood through the body. Its four chambers — two atria and two ventricles — work in a precise sequence to circulate oxygenated blood to the body and deoxygenated blood to the lungs.',
+    stats: [['100K','Beats per day'],['7,570L','Blood pumped/day'],['4','Chambers'],['~300g','Average weight']],
+    functions: ['Pumps oxygenated blood to the entire body via the aorta','Receives deoxygenated blood and sends it to the lungs for oxygenation','Maintains blood pressure through rhythmic contractions','Contains the sinoatrial node — the body\'s natural pacemaker','Distributes hormones and nutrients carried in the bloodstream'],
+    facts: ['The heart beats around 3 billion times over an average lifetime.','A heart can continue beating even when disconnected from the body if it receives oxygen.','The sound of a heartbeat is the closing of heart valves, not the pumping itself.'],
+    audio: 'Your heart is a remarkable pump that never takes a day off. Beating over one hundred thousand times a day, it circulates approximately seven and a half thousand litres of blood through your body every single day. This fist-sized muscular organ has four chambers working in perfect sync — the right side sends blood to pick up oxygen in the lungs, while the left side pumps that oxygen-rich blood to every cell in your body.',
+    quiz: [
+      { q: 'How many chambers does the human heart have?', opts: ['2','3','4','5'], a: 2 },
+      { q: 'Approximately how many times does the heart beat per day?', opts: ['10,000','50,000','100,000','500,000'], a: 2 },
+      { q: 'What is the heart\'s natural pacemaker called?', opts: ['AV node','SA node','Bundle of His','Purkinje fibres'], a: 1 },
+      { q: 'Which chamber pumps blood to the entire body?', opts: ['Right atrium','Left atrium','Right ventricle','Left ventricle'], a: 3 },
+    ]
+  },
+  {
+    id: 'realistic_human_lungs', name: 'Lungs', system: 'Respiratory',
+    icon: '🫁', color: '#e07050',
+    path: 'models/realistic_human_lungs/scene.gltf',
+    overview: 'The lungs are a pair of spongy, air-filled organs that sit on either side of the heart in the chest cavity. They are the primary organs of the respiratory system, responsible for gas exchange — absorbing oxygen from inhaled air and releasing carbon dioxide from the bloodstream. The right lung has three lobes; the left has two to make room for the heart.',
+    stats: [['~6L','Total capacity'],['70 m²','Surface area'],['300M','Alveoli count'],['~23K','Breaths per day']],
+    functions: ['Gas exchange — oxygen into blood, carbon dioxide out','Regulates blood pH by controlling CO₂ levels','Filters small blood clots from circulation','Produces surfactant to prevent alveolar collapse','Contributes to speech and vocalization via controlled airflow'],
+    facts: ['Unfolded, the lung surface would be the size of a tennis court.','The left lung is smaller than the right to accommodate the heart.','You inhale roughly 11,000 litres of air every single day.'],
+    audio: 'Your lungs are two remarkable spongy organs working tirelessly to keep you alive. With a combined surface area equivalent to a tennis court, they perform gas exchange about twenty-three thousand times a day. Three hundred million tiny air sacs called alveoli allow oxygen to diffuse into your blood while carbon dioxide flows back out to be exhaled. You breathe in approximately eleven thousand litres of air every day without thinking about it.',
+    quiz: [
+      { q: 'How many lobes does the right lung have?', opts: ['1','2','3','4'], a: 2 },
+      { q: 'What are the tiny air sacs in the lungs called?', opts: ['Bronchioles','Alveoli','Pleura','Cilia'], a: 1 },
+      { q: 'Approximately how many breaths do we take per day?', opts: ['5,000','12,000','23,000','50,000'], a: 2 },
+      { q: 'What gas is absorbed by the lungs?', opts: ['Carbon dioxide','Nitrogen','Oxygen','Hydrogen'], a: 2 },
+    ]
+  },
+  {
+    id: 'human_diaphragm', name: 'Diaphragm', system: 'Respiratory',
+    icon: '💨', color: '#d06080',
+    path: 'models/human_diaphragm/scene.gltf',
+    overview: 'The diaphragm is a dome-shaped musculotendinous sheet separating the thoracic and abdominal cavities. It is the primary muscle of breathing. When it contracts and flattens, it increases thoracic volume, creating negative pressure that draws air into the lungs. Relaxation reverses this to expel air.',
+    stats: [['#1','Breathing muscle'],['~17K','Contractions/day'],['3','Major openings'],['C3–C5','Nerve supply']],
+    functions: ['Primary muscle of inhalation — contracts to increase thoracic volume','Assists in forced exhalation, coughing, and vomiting','Stabilises the spine via intra-abdominal pressure generation','Passageway for the oesophagus, aorta, and inferior vena cava','Plays a role in preventing acid reflux at the oesophageal hiatus'],
+    facts: ['Hiccups are caused by involuntary spasms of the diaphragm.','Singers train diaphragmatic breathing for power and control.','The mnemonic for its nerve: "C3, 4, 5 keeps the diaphragm alive."'],
+    audio: 'The diaphragm is your primary breathing muscle — a dome-shaped sheet of muscle and tendon that divides your chest from your abdomen. Every single breath you take depends on this muscle contracting and flattening to pull air into your lungs. It contracts roughly seventeen thousand times every day, completely involuntarily. Hiccups happen when the diaphragm suddenly spasms and pulls air in against a closed airway, producing that characteristic sound.',
+    quiz: [
+      { q: 'What shape is the diaphragm at rest?', opts: ['Flat','Dome-shaped','Concave','Cylindrical'], a: 1 },
+      { q: 'What causes hiccups?', opts: ['Stomach spasm','Diaphragm spasm','Lung spasm','Heart flutter'], a: 1 },
+      { q: 'Which nerve controls the diaphragm?', opts: ['Vagus nerve','Phrenic nerve','Intercostal nerve','Splanchnic nerve'], a: 1 },
+      { q: 'What happens to the diaphragm during inhalation?', opts: ['It relaxes upward','It contracts and flattens','It expands outward','It stays still'], a: 1 },
+    ]
+  },
+  {
+    id: 'digestive_system', name: 'Digestive System', system: 'Gastrointestinal',
+    icon: '🫃', color: '#a0c060',
+    path: 'models/digestive_system/scene.gltf',
+    overview: 'The digestive system is a ~9-metre-long continuous tube plus accessory organs including the liver, gallbladder, and pancreas. It breaks down food mechanically and chemically, absorbs nutrients and water, and eliminates waste. Digestion begins in the mouth and completes in the large intestine.',
+    stats: [['~9m','GI tract length'],['24–72h','Transit time'],['~1.5L','Saliva per day'],['30M','Gut neurons']],
+    functions: ['Ingestion and mechanical breakdown of food in the mouth and stomach','Chemical digestion via enzymes, stomach acid, and bile','Absorption of nutrients, vitamins, water through the small intestine','Elimination of indigestible waste as faeces','Hosts the gut microbiome — approximately 100 trillion bacteria'],
+    facts: ['The small intestine is actually the longest part of the digestive tract at 6–7 metres.','The gut has its own nervous system — sometimes called the "second brain."','Stomach acid (pH ~1.5) is strong enough to dissolve metal.'],
+    audio: 'Your digestive system is a nine-metre-long processing plant that begins working the moment food enters your mouth. Over twenty-four to seventy-two hours, food travels through the oesophagus, stomach, small intestine and large intestine, being broken down and having its nutrients extracted along the way. Remarkably, your gut contains thirty million neurons — its own nervous system, sometimes called the second brain — and hosts a hundred trillion bacteria that are essential to your health.',
+    quiz: [
+      { q: 'How long is the human gastrointestinal tract approximately?', opts: ['3 metres','6 metres','9 metres','12 metres'], a: 2 },
+      { q: 'Which organ is the longest part of the digestive tract?', opts: ['Stomach','Large intestine','Small intestine','Oesophagus'], a: 2 },
+      { q: 'Approximately how long does food take to transit the digestive system?', opts: ['1–4 hours','24–72 hours','5–10 hours','3–5 days'], a: 1 },
+      { q: 'What is the approximate pH of stomach acid?', opts: ['7.0','5.5','3.0','1.5'], a: 3 },
+    ]
+  },
+  {
+    id: 'angiology', name: 'Circulatory System', system: 'Cardiovascular',
+    icon: '🩸', color: '#cc3333',
+    path: 'models/angiology/scene.gltf',
+    overview: 'Angiology covers blood vessels and the lymphatic system. The circulatory system includes about 100,000 km of blood vessels — arteries carry oxygenated blood away from the heart; veins return deoxygenated blood; capillaries enable exchange of gases, nutrients, and waste at the cellular level.',
+    stats: [['100K km','Blood vessel length'],['~5L','Blood volume (adult)'],['2.5×','Earth circumference'],['37 trillion','Cells served']],
+    functions: ['Transports oxygen and nutrients to every cell in the body','Removes carbon dioxide and metabolic waste products','Regulates body temperature through vessel dilation and constriction','Delivers immune cells and hormones throughout the body','Maintains fluid balance between blood and tissues'],
+    facts: ['All blood vessels end-to-end would wrap around the Earth 2.5 times.','Capillaries are so narrow that red blood cells travel single-file.','Blood completes a full circuit of the body in about 60 seconds at rest.'],
+    audio: 'The circulatory system is an astonishing network of blood vessels spanning one hundred thousand kilometres — enough to wrap around the Earth two and a half times. Every minute at rest, your heart pumps five litres of blood through this network, delivering oxygen and nutrients to all thirty-seven trillion cells in your body. The tiniest vessels, the capillaries, are so narrow that red blood cells must squeeze through in single file to deliver their precious cargo.',
+    quiz: [
+      { q: 'Approximately how long are all human blood vessels combined?', opts: ['10,000 km','50,000 km','100,000 km','500,000 km'], a: 2 },
+      { q: 'What type of vessel carries blood AWAY from the heart?', opts: ['Vein','Capillary','Artery','Lymphatic'], a: 2 },
+      { q: 'How much blood does an average adult have?', opts: ['2 litres','3.5 litres','5 litres','8 litres'], a: 2 },
+      { q: 'How long does one full blood circuit take at rest?', opts: ['10 seconds','60 seconds','5 minutes','1 hour'], a: 1 },
+    ]
+  },
+  {
+    id: 'ecorche_-_anatomy_study', name: 'Écorché Muscles', system: 'Musculoskeletal',
+    icon: '💪', color: '#d08060',
+    path: 'models/ecorche_-_anatomy_study/scene.gltf',
+    overview: 'An écorché is a classical anatomical model showing the body with skin removed to reveal the musculature. It is used in medical education and fine arts to study muscle groups, their origins, insertions, and surface form. The body has over 600 named skeletal muscles making up roughly 40% of body weight.',
+    stats: [['600+','Skeletal muscles'],['~40%','Body weight'],['3','Muscle types'],['639','Named muscles']],
+    functions: ['Enables all voluntary movement — locomotion, manipulation, expression','Maintains posture and body position against gravity','Generates body heat through metabolic activity (thermogenesis)','Protects bones and organs as a physical layer','Supports joint stability alongside ligaments and tendons'],
+    facts: ['The gluteus maximus is the largest muscle in the body.','The stapedius in the ear is the smallest — just over 1mm.','Muscles can only pull, never push — they work in opposing pairs.'],
+    audio: 'The écorché model reveals what lies beneath the skin — over six hundred skeletal muscles that give the body its form and enable every movement you make. Muscles make up about forty percent of your body weight and are the engines of the body, generating heat and force. They work only by contracting and pulling, never pushing, so they are arranged in opposing pairs. When one contracts to create movement, its counterpart relaxes to allow smooth, controlled motion.',
+    quiz: [
+      { q: 'What percentage of body weight do muscles represent?', opts: ['20%','30%','40%','50%'], a: 2 },
+      { q: 'Which is the largest muscle in the human body?', opts: ['Quadriceps','Gluteus maximus','Latissimus dorsi','Pectoralis major'], a: 1 },
+      { q: 'Which is the smallest muscle in the body?', opts: ['Stapedius','Arrector pili','Lumbricals','Interossei'], a: 0 },
+      { q: 'How do muscles create movement?', opts: ['By pushing','By contracting and pulling','By expanding','By vibrating'], a: 1 },
+    ]
+  }
+];
+
+// ── THREE.JS ──────────────────────────────────────────────────────
+const canvas = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x06090f);
+scene.fog = new THREE.Fog(0x06090f, 30, 80);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 500);
+camera.position.set(0, 0, 5);
+
+// Grid
+const grid = new THREE.GridHelper(20, 30, 0x1c3248, 0x1c3248);
+grid.position.y = -2.5;
+grid.visible = false;
+scene.add(grid);
+
+// Lighting
+const amb = new THREE.AmbientLight(0xc8e0ff, 0.5);
+scene.add(amb);
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(4, 8, 5);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x00e5c8, 0.4);
+fill.position.set(-5, 2, -4);
+scene.add(fill);
+const back = new THREE.DirectionalLight(0xe63946, 0.2);
+back.position.set(0, -4, -6);
+scene.add(back);
+const rim = new THREE.DirectionalLight(0xffffff, 0.3);
+rim.position.set(0, 6, -5);
+scene.add(rim);
+
+// Resize
+function resize() {
+  const w = canvas.parentElement.clientWidth;
+  const h = canvas.parentElement.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── ORBIT CONTROLS ────────────────────────────────────────────────
+const oc = (() => {
+  let state = 0, autoRot = true;
+  const sph = { theta: 0, phi: Math.PI / 2, r: 5 };
+  const delta = { theta: 0, phi: 0 };
+  const pan = new THREE.Vector3();
+  const target = new THREE.Vector3();
+  let scale = 1;
+  const rs = new THREE.Vector2(), re = new THREE.Vector2();
+  const ps = new THREE.Vector2();
+  const DAMPING = 0.08;
+
+  const el = canvas;
+  el.addEventListener('mousedown', e => {
+    e.preventDefault();
+    if (e.button === 0) { state = 1; rs.set(e.clientX, e.clientY); }
+    else if (e.button === 2) { state = 3; ps.set(e.clientX, e.clientY); }
+  });
+  el.addEventListener('mousemove', e => {
+    if (!state) return;
+    if (state === 1) {
+      re.set(e.clientX, e.clientY);
+      delta.theta -= (re.x - rs.x) * 0.006;
+      delta.phi   -= (re.y - rs.y) * 0.006;
+      rs.copy(re);
+    } else if (state === 3) {
+      const dx = (e.clientX - ps.x) * 0.003 * sph.r;
+      const dy = (e.clientY - ps.y) * 0.003 * sph.r;
+      const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0).multiplyScalar(-dx);
+      const up    = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1).multiplyScalar(dy);
+      pan.add(right).add(up);
+      ps.set(e.clientX, e.clientY);
+    }
+  });
+  el.addEventListener('mouseup', () => { state = 0; });
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    scale *= e.deltaY < 0 ? 0.9 : 1.11;
+  }, { passive: false });
+  el.addEventListener('contextmenu', e => e.preventDefault());
+
+  let touches = [];
+  el.addEventListener('touchstart', e => { touches = [...e.touches]; if (e.touches.length === 1) { state = 1; rs.set(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
+  el.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && state === 1) {
+      re.set(e.touches[0].clientX, e.touches[0].clientY);
+      delta.theta -= (re.x - rs.x) * 0.006;
+      delta.phi   -= (re.y - rs.y) * 0.006;
+      rs.copy(re);
+    } else if (e.touches.length === 2 && touches.length === 2) {
+      const d0 = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+      const d1 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      scale *= d0 / d1;
+      touches = [...e.touches];
+    }
+  }, { passive: false });
+  el.addEventListener('touchend', () => { state = 0; touches = []; });
+
+  function update() {
+    if (autoRot && state === 0) delta.theta -= 0.003;
+    sph.theta += delta.theta;
+    sph.phi   += delta.phi;
+    sph.phi = Math.max(0.05, Math.min(Math.PI - 0.05, sph.phi));
+    sph.r   *= scale;
+    sph.r    = Math.max(0.5, Math.min(200, sph.r));
+    target.add(pan);
+
+    const x = sph.r * Math.sin(sph.phi) * Math.sin(sph.theta);
+    const y = sph.r * Math.cos(sph.phi);
+    const z = sph.r * Math.sin(sph.phi) * Math.cos(sph.theta);
+    camera.position.set(target.x + x, target.y + y, target.z + z);
+    camera.lookAt(target);
+
+    delta.theta *= 1 - DAMPING;
+    delta.phi   *= 1 - DAMPING;
+    pan.multiplyScalar(1 - DAMPING);
+    scale = 1 + (scale - 1) * (1 - DAMPING);
+  }
+
+  return {
+    update,
+    setAutoRotate: v => { autoRot = v; },
+    getAutoRotate: () => autoRot,
+    reset: (r = 5) => {
+      sph.theta = 0; sph.phi = Math.PI / 2; sph.r = r;
+      target.set(0, 0, 0); pan.set(0, 0, 0); scale = 1;
+    }
+  };
+})();
+
+// Render loop
+function animate() {
+  requestAnimationFrame(animate);
+  oc.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+// ── STATE ─────────────────────────────────────────────────────────
+let currentModel = null;
+let currentOrgan = null;
+let wireframe = false;
+let exploded = false;
+let globalAudio = true;
+let speaking = false;
+let audioStartTime = 0;
+let audioDuration = 0;
+let audioTimer = null;
+let quizData = [];
+let quizIdx = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let currentTab = 'overview';
+
+// ── BUILD SIDEBAR ─────────────────────────────────────────────────
+const sbList = document.getElementById('sbList');
+ORGANS.forEach(o => {
+  const el = document.createElement('div');
+  el.className = 'organ-card';
+  el.id = `card-${o.id}`;
+  el.innerHTML = `
+    <div class="oc-glyph" style="background:${o.color}22;border:1px solid ${o.color}44">${o.icon}</div>
+    <div class="oc-text">
+      <span class="oc-name">${o.name}</span>
+      <span class="oc-sys">${o.system}</span>
+    </div>
+    <div class="oc-active-dot"></div>
+  `;
+  el.onclick = () => selectOrgan(o);
+  sbList.appendChild(el);
+});
+
+// ── GLTF LOADING ──────────────────────────────────────────────────
+let GLTFLoader, DRACOLoader;
+async function ensureLoader() {
+  if (GLTFLoader) return;
+  const m1 = await import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js');
+  const m2 = await import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/DRACOLoader.js');
+  GLTFLoader = m1.GLTFLoader;
+  DRACOLoader = m2.DRACOLoader;
+}
+
+async function loadModel(path) {
+  await ensureLoader();
+  const draco = new DRACOLoader();
+  draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');
+  const loader = new GLTFLoader();
+  loader.setDRACOLoader(draco);
+  return new Promise((res, rej) => loader.load(path, res, undefined, rej));
+}
+
+// ── SELECT ORGAN ──────────────────────────────────────────────────
+async function selectOrgan(organ) {
+  if (currentOrgan?.id === organ.id) return;
+  stopAudio();
+
+  document.querySelectorAll('.organ-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`card-${organ.id}`).classList.add('active');
+
+  // Welcome → gone
+  document.getElementById('vWelcome').classList.add('gone');
+
+  // Show loading
+  const vl = document.getElementById('vLoading');
+  vl.style.display = 'flex'; vl.classList.remove('gone');
+  document.getElementById('vlName').textContent = organ.name;
+  document.getElementById('vlMsg').textContent = 'Parsing geometry…';
+
+  // Show HUD / toolbar / hints
+  document.getElementById('vHud').style.display = 'flex';
+  document.getElementById('vToolbar').style.display = 'flex';
+  document.getElementById('vHints').style.display = 'flex';
+  document.getElementById('hudName').textContent = organ.name;
+  document.getElementById('hudSys').textContent = organ.system;
+
+  // Info panel
+  updateInfo(organ);
+
+  // Load
+  try {
+    document.getElementById('vlMsg').textContent = 'Loading 3D model…';
+    const gltf = await loadModel(organ.path);
+
+    // Clear old
+    if (currentModel) {
+      scene.remove(currentModel);
+      currentModel.traverse(o => {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) [].concat(o.material).forEach(m => m.dispose());
+      });
+    }
+
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const c = box.getCenter(new THREE.Vector3());
+    const s = box.getSize(new THREE.Vector3());
+    const maxD = Math.max(s.x, s.y, s.z);
+    const sc = 3 / maxD;
+    model.scale.setScalar(sc);
+    model.position.sub(c.multiplyScalar(sc));
+    scene.add(model);
+    currentModel = model;
+    currentOrgan = organ;
+    wireframe = false; exploded = false;
+    document.getElementById('btnWire').classList.remove('on');
+    document.getElementById('btnExp').classList.remove('on');
+
+    oc.reset(4.5);
+    grid.position.y = -box.getSize(new THREE.Vector3()).y * sc * 0.5 - 0.3;
+
+    // Hide loading
+    vl.classList.add('gone');
+    setTimeout(() => { vl.style.display = 'none'; }, 500);
+
+    showToast(`${organ.name} loaded`);
+
+    if (globalAudio) setTimeout(() => playAudio(organ), 900);
+
+  } catch(e) {
+    document.getElementById('vlMsg').textContent = `Failed to load: ${e.message}`;
+    console.error(e);
+  }
+}
+
+// ── INFO PANEL ────────────────────────────────────────────────────
+function updateInfo(organ) {
+  document.getElementById('infoEmpty').style.display = 'none';
+  const ic = document.getElementById('infoContent');
+  ic.style.display = 'flex';
+
+  document.getElementById('ihSys').textContent = organ.system;
+  document.getElementById('ihName').textContent = organ.name;
+  document.getElementById('ovText').textContent = organ.overview;
+
+  // Stats
+  const sg = document.getElementById('statsGrid');
+  sg.innerHTML = organ.stats.map(([v, l]) => `
+    <div class="stat-card">
+      <div class="stat-val">${v}</div>
+      <div class="stat-lbl">${l}</div>
+    </div>
+  `).join('');
+
+  // Functions
+  document.getElementById('fnList').innerHTML = organ.functions.map(f => `
+    <div class="fn-item"><div class="fn-bar"></div><span>${f}</span></div>
+  `).join('');
+
+  // Facts
+  document.getElementById('factList').innerHTML = organ.facts.map(f => `
+    <div class="fact-item">${f}</div>
+  `).join('');
+
+  // Quiz
+  quizData = [...organ.quiz].sort(() => Math.random() - 0.5);
+  quizIdx = 0; quizScore = 0; quizAnswered = false;
+  renderQuestion();
+
+  // Reset audio btn
+  document.getElementById('apBtn').classList.remove('playing');
+  document.getElementById('apIcon').textContent = '▶';
+  document.getElementById('apLabel').textContent = 'Play narration';
+  document.getElementById('apWave').classList.remove('on');
+  document.getElementById('apStatus').textContent = 'Web Speech API · no download required';
+  document.getElementById('apBar').style.width = '0%';
+  clearInterval(audioTimer);
+
+  // Switch to overview tab
+  switchTab('overview', document.querySelector('.tab'));
+}
+
+// ── TABS ──────────────────────────────────────────────────────────
+window.switchTab = function(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`pane-${name}`).classList.add('active');
+  currentTab = name;
+};
+
+// ── QUIZ ──────────────────────────────────────────────────────────
+function renderQuestion() {
+  document.getElementById('quizScore').textContent = `Score: ${quizScore} / ${quizIdx}`;
+  if (quizIdx >= quizData.length) {
+    document.getElementById('quizQ').textContent = `Quiz complete! You scored ${quizScore} out of ${quizData.length}.`;
+    document.getElementById('quizOpts').innerHTML = '';
+    document.getElementById('quizResult').style.display = 'none';
+    document.getElementById('quizNext').style.display = 'none';
+    return;
+  }
+  const q = quizData[quizIdx];
+  document.getElementById('quizQ').textContent = q.q;
+  document.getElementById('quizOpts').innerHTML = q.opts.map((o, i) => `
+    <button class="quiz-opt" onclick="answerQuiz(${i})">${o}</button>
+  `).join('');
+  document.getElementById('quizResult').style.display = 'none';
+  document.getElementById('quizNext').style.display = 'none';
+  quizAnswered = false;
+}
+
+window.answerQuiz = function(idx) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quizData[quizIdx];
+  const opts = document.querySelectorAll('.quiz-opt');
+  const res = document.getElementById('quizResult');
+  if (idx === q.a) {
+    opts[idx].classList.add('correct');
+    quizScore++;
+    res.textContent = '✓ Correct!';
+    res.style.color = 'var(--cyan)';
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[q.a].classList.add('correct');
+    res.textContent = `✗ The answer is: ${q.opts[q.a]}`;
+    res.style.color = 'var(--red)';
+  }
+  res.style.display = 'block';
+  document.getElementById('quizNext').style.display = 'block';
+  document.getElementById('quizScore').textContent = `Score: ${quizScore} / ${quizIdx + 1}`;
+};
+
+window.nextQuestion = function() {
+  quizIdx++;
+  renderQuestion();
+};
+
+// ── AUDIO ─────────────────────────────────────────────────────────
+function playAudio(organ) {
+  if (!globalAudio || !window.speechSynthesis) return;
+  stopAudio();
+  speaking = true;
+  const utt = new SpeechSynthesisUtterance(organ.audio);
+  utt.rate = 0.9; utt.pitch = 1.0; utt.volume = 1.0;
+  const voices = speechSynthesis.getVoices();
+  const v = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'))
+         || voices.find(v => v.lang.startsWith('en-'))
+         || voices[0];
+  if (v) utt.voice = v;
+
+  // Estimate duration
+  const wordCount = organ.audio.split(' ').length;
+  audioDuration = (wordCount / 2.8) * 1000; // ~168 wpm at 0.9 rate
+
+  utt.onstart = () => {
+    document.getElementById('apBtn').classList.add('playing');
+    document.getElementById('apIcon').textContent = '■';
+    document.getElementById('apLabel').textContent = 'Speaking…';
+    document.getElementById('apWave').classList.add('on');
+    document.getElementById('apStatus').textContent = 'Narrating…';
+    audioStartTime = Date.now();
+    clearInterval(audioTimer);
+    audioTimer = setInterval(() => {
+      const pct = Math.min(100, ((Date.now() - audioStartTime) / audioDuration) * 100);
+      document.getElementById('apBar').style.width = pct + '%';
+    }, 100);
+  };
+  const done = () => {
+    speaking = false;
+    clearInterval(audioTimer);
+    document.getElementById('apBar').style.width = '100%';
+    setTimeout(() => { document.getElementById('apBar').style.width = '0%'; }, 600);
+    document.getElementById('apBtn').classList.remove('playing');
+    document.getElementById('apIcon').textContent = '▶';
+    document.getElementById('apLabel').textContent = 'Play again';
+    document.getElementById('apWave').classList.remove('on');
+    document.getElementById('apStatus').textContent = 'Narration complete';
+  };
+  utt.onend = done; utt.onerror = done;
+  speechSynthesis.speak(utt);
+}
+
+function stopAudio() {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  speaking = false;
+  clearInterval(audioTimer);
+  document.getElementById('apBtn').classList.remove('playing');
+  document.getElementById('apIcon').textContent = '▶';
+  document.getElementById('apLabel').textContent = currentOrgan ? 'Play narration' : 'Play narration';
+  document.getElementById('apWave').classList.remove('on');
+  document.getElementById('apBar').style.width = '0%';
+}
+
+window.toggleAudio = function() {
+  if (speaking) stopAudio();
+  else if (currentOrgan) playAudio(currentOrgan);
+};
+
+window.toggleGlobalAudio = function() {
+  globalAudio = !globalAudio;
+  const btn = document.getElementById('audioToggleBtn');
+  btn.textContent = globalAudio ? '🔊 Audio' : '🔇 Audio';
+  btn.classList.toggle('muted', !globalAudio);
+  if (!globalAudio) stopAudio();
+};
+
+// ── VIEWER CONTROLS ───────────────────────────────────────────────
+window.resetCam = function() { oc.reset(4.5); showToast('Camera reset'); };
+
+window.toggleRotate = function() {
+  const v = !oc.getAutoRotate();
+  oc.setAutoRotate(v);
+  document.getElementById('btnRot').classList.toggle('on', v);
+  showToast(v ? 'Auto-rotate on' : 'Auto-rotate off');
+};
+
+window.toggleWire = function() {
+  if (!currentModel) return;
+  wireframe = !wireframe;
+  currentModel.traverse(o => {
+    if (o.isMesh) [].concat(o.material).forEach(m => { m.wireframe = wireframe; });
+  });
+  document.getElementById('btnWire').classList.toggle('on', wireframe);
+  showToast(wireframe ? 'Wireframe on' : 'Wireframe off');
+};
+
+let explodePositions = new Map();
+window.toggleExplode = function() {
+  if (!currentModel) return;
+  exploded = !exploded;
+  if (exploded) {
+    explodePositions.clear();
+    currentModel.children.forEach((child, i) => {
+      explodePositions.set(child, child.position.clone());
+      const dir = new THREE.Vector3(
+        (Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5)
+      ).normalize().multiplyScalar(0.6 + i * 0.15);
+      child.position.add(dir);
+    });
+    showToast('Explode view on');
+  } else {
+    currentModel.children.forEach(child => {
+      const orig = explodePositions.get(child);
+      if (orig) child.position.copy(orig);
+    });
+    showToast('Explode view off');
+  }
+  document.getElementById('btnExp').classList.toggle('on', exploded);
+};
+
+window.zoomIn  = () => { camera.position.multiplyScalar(0.85); showToast('Zoom in'); };
+window.zoomOut = () => { camera.position.multiplyScalar(1.18); showToast('Zoom out'); };
+
+window.toggleGrid = function() {
+  grid.visible = !grid.visible;
+  document.getElementById('gridBtn').textContent = grid.visible ? '⊞ Grid ✓' : '⊞ Grid';
+};
+
+// ── TOAST ─────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ── INTRO ─────────────────────────────────────────────────────────
+window.enterApp = function() {
+  document.getElementById('intro').classList.add('exit');
+  setTimeout(() => {
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('particles').style.display = 'none';
+  }, 800);
+  document.getElementById('app').classList.add('visible');
+};
+
+// Pre-load voices
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => {};
+}
+
+// Expose selectOrgan for external access
+window._selectOrgan = selectOrgan;
+window._ORGANS = ORGANS;
+</script>
+</body>
+</html>
