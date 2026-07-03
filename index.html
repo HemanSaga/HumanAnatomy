@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CORPUS — Human Anatomy Atlas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ── DESIGN TOKENS ─────────────────────────────────────────────────
    Palette: deep midnight navy (#06090f), bioluminescent cyan (#00e5c8),
@@ -29,9 +29,9 @@
   --mist:     #7a9ab0;
   --gold:     #f4b942;
 
-  --f-display: 'Syne', sans-serif;
-  --f-body:    'Instrument Sans', sans-serif;
-  --f-mono:    'JetBrains Mono', monospace;
+  --f-display: 'Bricolage Grotesque', sans-serif;
+  --f-body:    'Plus Jakarta Sans', sans-serif;
+  --f-mono:    'Space Mono', monospace;
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -975,6 +975,80 @@ header {
 }
 .xray-axis-btn.on { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-dim); }
 
+/* ── HOTSPOT LABELS ────────────────────────────────────────────── */
+.hotspot-layer { position: absolute; inset: 0; pointer-events: none; z-index: 12; display: none; }
+.hotspot-layer.show { display: block; }
+.hotspot-marker {
+  position: absolute;
+  width: 24px; height: 24px;
+  margin-left: -12px; margin-top: -12px;
+  border-radius: 50%;
+  background: rgba(0,229,200,0.18);
+  border: 1.5px solid var(--cyan);
+  color: var(--cyan);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-mono); font-size: 10px; font-weight: 700;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s, background 0.15s, color 0.15s;
+  box-shadow: 0 0 12px rgba(0,229,200,0.35);
+}
+.hotspot-marker::after {
+  content: '';
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 1px solid var(--cyan);
+  opacity: 0.5;
+  animation: hotspotPulse 2s ease infinite;
+}
+@keyframes hotspotPulse {
+  0%   { transform: scale(0.8); opacity: 0.6; }
+  70%  { transform: scale(1.7); opacity: 0; }
+  100% { opacity: 0; }
+}
+.hotspot-marker:hover, .hotspot-marker.active { background: var(--cyan); color: var(--night); transform: scale(1.15); }
+.hotspot-marker.behind { opacity: 0.2; }
+
+.hotspot-popup {
+  position: absolute;
+  left: 16px; top: 78px;
+  max-width: 250px;
+  background: rgba(10,18,32,0.95);
+  border: 1px solid var(--rim);
+  border-left: 2px solid var(--cyan);
+  border-radius: 6px;
+  padding: 14px 30px 14px 16px;
+  backdrop-filter: blur(10px);
+  display: none;
+  z-index: 16;
+  pointer-events: auto;
+}
+.hotspot-popup.show { display: block; }
+.hp-num { font-family: var(--f-mono); font-size: 9px; color: var(--cyan); letter-spacing: 0.12em; text-transform: uppercase; }
+.hp-title { font-family: var(--f-display); font-size: 14px; font-weight: 700; color: var(--bone); margin: 4px 0 6px; }
+.hp-desc { font-family: var(--f-body); font-size: 12px; color: var(--bone); opacity: 0.82; line-height: 1.55; }
+.hp-close {
+  position: absolute; top: 8px; right: 10px;
+  background: none; border: none; color: var(--mist);
+  font-size: 16px; cursor: pointer; line-height: 1;
+}
+.hp-close:hover { color: var(--bone); }
+
+/* ── FLOW ANIMATION LEGEND ─────────────────────────────────────── */
+.flow-legend {
+  position: absolute; right: 16px; bottom: 16px;
+  display: none; flex-direction: column; gap: 8px;
+  background: rgba(10,18,32,0.9);
+  border: 1px solid var(--rim); border-radius: 6px;
+  padding: 12px 14px; backdrop-filter: blur(10px);
+  z-index: 15;
+}
+.flow-legend.show { display: flex; }
+.fl-title { font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--mist); text-transform: uppercase; margin-bottom: 2px; }
+.fl-item { display: flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.05em; color: var(--bone); text-transform: uppercase; }
+.fl-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
 /* ── MODAL (MASTER QUIZ) ──────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0;
@@ -1157,7 +1231,7 @@ header {
       <div class="hdr-progress-label" id="hdrProgressLabel">0 / 7 EXPLORED</div>
     </div>
     <div class="hdr-right">
-      <div class="hdr-pill">7 MODELS</div>
+      <div class="hdr-pill">10 MODELS</div>
       <button class="hdr-btn" onclick="openMasterQuiz()">🎓 Master Quiz</button>
       <button class="hdr-btn" id="audioToggleBtn" onclick="toggleGlobalAudio()">🔊 Audio</button>
       <button class="hdr-btn" onclick="toggleGrid()" id="gridBtn">⊞ Grid</button>
@@ -1218,9 +1292,27 @@ header {
         <button class="tb-btn" title="Wireframe" onclick="toggleWire()" id="btnWire">⬡</button>
         <button class="tb-btn" title="Explode View" onclick="toggleExplode()" id="btnExp">✦</button>
         <button class="tb-btn" title="Cross-Section X-Ray" onclick="toggleXray()" id="btnXray">◐</button>
+        <button class="tb-btn" title="Pan Mode (drag to move up/down/left/right)" onclick="togglePanMode()" id="btnPan">✋</button>
+        <button class="tb-btn on" title="Toggle Part Labels" onclick="toggleLabels()" id="btnLabels">🏷</button>
+        <button class="tb-btn" title="Blood / Air Flow Animation" onclick="toggleFlow()" id="btnFlow" style="display:none">➜</button>
         <div class="tb-sep"></div>
         <button class="tb-btn" onclick="zoomIn()">+</button>
         <button class="tb-btn" onclick="zoomOut()">−</button>
+      </div>
+
+      <!-- Numbered part labels -->
+      <div class="hotspot-layer show" id="hotspotLayer"></div>
+      <div class="hotspot-popup" id="hotspotPopup">
+        <button class="hp-close" onclick="closeHotspotPopup()">×</button>
+        <div class="hp-num" id="hpNum">PART 1</div>
+        <div class="hp-title" id="hpTitle">—</div>
+        <div class="hp-desc" id="hpDesc">—</div>
+      </div>
+
+      <!-- Flow animation legend -->
+      <div class="flow-legend" id="flowLegend">
+        <div class="fl-title">Flow Direction</div>
+        <div id="flowLegendItems"></div>
       </div>
 
       <!-- Cross-section panel -->
@@ -1238,7 +1330,7 @@ header {
       <div class="v-hints" id="vHints">
         <div class="vh-item"><span class="vh-key">Drag</span>Rotate</div>
         <div class="vh-item"><span class="vh-key">Scroll</span>Zoom</div>
-        <div class="vh-item"><span class="vh-key">Right-drag</span>Pan</div>
+        <div class="vh-item"><span class="vh-key">Shift+Drag</span>Pan</div>
       </div>
     </div>
 
@@ -1549,8 +1641,134 @@ const ORGANS = [
       { q: 'Which is the smallest muscle in the body?', opts: ['Stapedius','Arrector pili','Lumbricals','Interossei'], a: 0 },
       { q: 'How do muscles create movement?', opts: ['By pushing','By contracting and pulling','By expanding','By vibrating'], a: 1 },
     ]
+  },
+  {
+    id: 'liver', name: 'Liver', system: 'Hepatic',
+    icon: '🟤', color: '#a05a3c',
+    path: 'models/liver/scene.glb',
+    overview: 'The liver is the largest internal organ, sitting in the upper right abdomen beneath the diaphragm. A reddish-brown, wedge-shaped gland, it performs over 500 vital functions — from filtering toxins out of the blood to producing bile for digestion, storing vitamins, and synthesising proteins essential for clotting. It is the only internal organ capable of regenerating lost tissue.',
+    stats: [['~1.5kg','Average weight'],['500+','Known functions'],['~1.5L/min','Blood filtered'],['~25%','Can regrow from']],
+    functions: ['Filters toxins, drugs, and metabolic waste from the bloodstream','Produces bile to help digest and absorb fats in the small intestine','Stores glucose as glycogen and releases it to regulate blood sugar','Synthesises clotting factors and major blood plasma proteins','Metabolises alcohol, medications, and hormones'],
+    facts: ['The liver can regenerate to full size even after up to 70% of it is removed.','It processes almost all the blood leaving the stomach and intestines.','The liver performs more than 500 distinct chemical functions.'],
+    audio: 'Your liver is a remarkable reddish-brown organ tucked beneath your ribs, weighing about one and a half kilograms. It quietly performs over five hundred functions, filtering toxins from your blood, producing bile to digest fats, and storing energy as glycogen for when your body needs it. Perhaps most astonishing of all, it is the only internal organ that can regenerate — even if up to seventy percent of it is removed, a healthy liver can grow back to its full size.',
+    quiz: [
+      { q: 'Approximately how much does an adult liver weigh?', opts: ['0.5 kg','1.5 kg','3 kg','5 kg'], a: 1 },
+      { q: 'What substance does the liver produce to digest fats?', opts: ['Insulin','Bile','Pepsin','Amylase'], a: 1 },
+      { q: 'What is unique about the liver compared to most organs?', opts: ['It has no blood supply','It can regenerate','It has no cells','It never changes size'], a: 1 },
+      { q: 'How does the liver help regulate blood sugar?', opts: ['By producing insulin','By storing glucose as glycogen','By absorbing sugar directly','It plays no role'], a: 1 },
+    ]
+  },
+  {
+    id: 'kidneys', name: 'Kidneys', system: 'Renal',
+    icon: '🫘', color: '#7a3040',
+    path: 'models/kidneys/scene.glb',
+    overview: 'The kidneys are a pair of bean-shaped organs located at the back of the abdomen, one on each side of the spine. Each contains roughly a million tiny filtering units called nephrons, which together filter the entire blood supply many times a day — removing waste, balancing fluids and electrolytes, and producing urine. The kidneys also release hormones that regulate blood pressure and stimulate red blood cell production.',
+    stats: [['2','Kidneys per body'],['~1M','Nephrons per kidney'],['~180L','Fluid filtered daily'],['~1–2L','Urine produced daily']],
+    functions: ['Filters waste products and excess fluid out of the blood to form urine','Regulates the body\'s balance of water, sodium, and potassium','Releases renin to help control blood pressure','Produces erythropoietin, which stimulates red blood cell production','Activates vitamin D for calcium absorption and bone health'],
+    facts: ['Your kidneys filter your entire blood volume roughly 40 times a day.','You can live a full life with just one functioning kidney.','Each kidney contains about a million microscopic filters called nephrons.'],
+    audio: 'Your kidneys are two bean-shaped organs, each about the size of a fist, working around the clock as your body\'s filtration system. Together they filter around one hundred and eighty litres of fluid every single day, extracting waste and excess water to produce roughly one to two litres of urine. Inside each kidney are about a million microscopic filtering units called nephrons. Beyond filtration, your kidneys also help control blood pressure and trigger the production of red blood cells.',
+    quiz: [
+      { q: 'What are the microscopic filtering units in the kidney called?', opts: ['Alveoli','Nephrons','Villi','Neurons'], a: 1 },
+      { q: 'Roughly how much fluid do the kidneys filter per day?', opts: ['18 litres','60 litres','180 litres','400 litres'], a: 2 },
+      { q: 'Which hormone do the kidneys release to stimulate red blood cell production?', opts: ['Insulin','Erythropoietin','Cortisol','Adrenaline'], a: 1 },
+      { q: 'How many kidneys does a person need to survive normally?', opts: ['Two, always', 'One is enough', 'Three', 'None, with treatment'], a: 1 },
+    ]
+  },
+  {
+    id: 'eyeball', name: 'Eye', system: 'Sensory',
+    icon: '👁️', color: '#3f7fa0',
+    path: 'models/eyeball/scene.glb',
+    overview: 'The eye is the body\'s primary organ of vision, a roughly spherical structure about 2.4 cm in diameter. Light enters through the cornea, is focused by the lens, and lands on the retina, where photoreceptor cells called rods and cones convert it into electrical signals. These signals travel along the optic nerve to the brain, which reconstructs them into the images we see.',
+    stats: [['~2.4cm','Diameter'],['~120M','Rod cells'],['~6M','Cone cells'],['~1M','Optic nerve fibres']],
+    functions: ['Focuses light onto the retina via the cornea and lens','Converts light into electrical signals through rods and cones','Rods enable low-light and peripheral vision; cones enable colour and detail','Adjusts pupil size to control the amount of light entering','Sends visual signals to the brain via the optic nerve for processing'],
+    facts: ['The eye can distinguish about 10 million different colours.','Rod cells are so sensitive they can detect a single photon of light.','The eye is the fastest-focusing lens system in the known world, adjusting in milliseconds.'],
+    audio: 'Your eyes are extraordinary optical instruments, each just under two and a half centimetres across, yet capable of distinguishing around ten million different colours. Light passes through the cornea and lens before striking the retina at the back of the eye, where over a hundred million rod cells and six million cone cells convert that light into electrical signals. Rods handle low-light and peripheral vision, while cones capture colour and fine detail. Every signal then races along the optic nerve to your brain, which builds the picture you actually perceive.',
+    quiz: [
+      { q: 'What part of the eye focuses light onto the retina?', opts: ['Cornea and lens','Retina alone','Optic nerve','Sclera'], a: 0 },
+      { q: 'Which photoreceptor cells are responsible for colour vision?', opts: ['Rods','Cones','Nerves','Ganglion cells'], a: 1 },
+      { q: 'Roughly how many colours can the human eye distinguish?', opts: ['10,000','1 million','10 million','100 million'], a: 2 },
+      { q: 'What carries visual signals from the eye to the brain?', opts: ['Spinal cord','Optic nerve','Vagus nerve','Carotid artery'], a: 1 },
+    ]
   }
 ];
+
+// ── HOTSPOT LABELS (approximate anatomical positions, fractional bounding box) ──
+const HOTSPOTS = {
+  human_skeleton: [
+    { fx:0.5, fy:0.97, fz:0.5, label:'Cranium', desc:'The skull houses and protects the brain, formed from 22 fused bones.' },
+    { fx:0.5, fy:0.68, fz:0.55, label:'Rib Cage', desc:'12 pairs of ribs form a protective cage around the heart and lungs.' },
+    { fx:0.5, fy:0.55, fz:0.35, label:'Vertebral Column', desc:'33 vertebrae stacked to support the body and protect the spinal cord.' },
+    { fx:0.5, fy:0.42, fz:0.5, label:'Pelvis', desc:'A basin-shaped structure that supports the spine and connects to the legs.' },
+    { fx:0.5, fy:0.12, fz:0.5, label:'Femur', desc:'The longest and strongest bone in the body, forming the thigh.' }
+  ],
+  human_heart_3d_model: [
+    { fx:0.35, fy:0.85, fz:0.5, label:'Aorta', desc:"The body's largest artery, carrying oxygen-rich blood out to the body." },
+    { fx:0.65, fy:0.75, fz:0.5, label:'Right Atrium', desc:'Receives deoxygenated blood returning from the body.' },
+    { fx:0.35, fy:0.45, fz:0.5, label:'Left Ventricle', desc:'The thick-walled chamber that pumps oxygenated blood to the entire body.' },
+    { fx:0.6, fy:0.5, fz:0.5, label:'Right Ventricle', desc:'Pumps deoxygenated blood onward to the lungs via the pulmonary artery.' },
+    { fx:0.45, fy:0.1, fz:0.5, label:'Apex', desc:'The pointed lower tip of the heart, formed mostly by the left ventricle.' }
+  ],
+  realistic_human_lungs: [
+    { fx:0.5, fy:0.9, fz:0.5, label:'Trachea', desc:'The windpipe, carrying air from the throat down into the bronchi.' },
+    { fx:0.68, fy:0.55, fz:0.5, label:'Right Lung', desc:'Divided into three lobes; slightly larger than the left lung.' },
+    { fx:0.32, fy:0.55, fz:0.5, label:'Left Lung', desc:'Divided into two lobes to make room for the heart.' },
+    { fx:0.5, fy:0.72, fz:0.5, label:'Bronchi', desc:'The two main airways branching from the trachea into each lung.' },
+    { fx:0.5, fy:0.2, fz:0.5, label:'Lung Base', desc:'The lower surface resting on the diaphragm, dense with alveoli.' }
+  ],
+  human_diaphragm: [
+    { fx:0.5, fy:0.75, fz:0.5, label:'Central Tendon', desc:'The flat, non-muscular centre of the diaphragm.' },
+    { fx:0.25, fy:0.4, fz:0.5, label:'Costal Part', desc:'Muscle fibres attaching to the lower ribs.' },
+    { fx:0.5, fy:0.5, fz:0.5, label:'Esophageal Hiatus', desc:'The opening through which the oesophagus passes into the abdomen.' },
+    { fx:0.5, fy:0.2, fz:0.4, label:'Crura', desc:'Tendinous attachments anchoring the diaphragm to the lumbar spine.' }
+  ],
+  digestive_system: [
+    { fx:0.35, fy:0.75, fz:0.5, label:'Stomach', desc:'A muscular sac that mixes food with acid and digestive enzymes.' },
+    { fx:0.5, fy:0.4, fz:0.5, label:'Small Intestine', desc:'A coiled, ~6-7m tube where most nutrient absorption occurs.' },
+    { fx:0.6, fy:0.6, fz:0.6, label:'Large Intestine', desc:'Absorbs water and forms waste into stool for elimination.' },
+    { fx:0.5, fy:0.92, fz:0.5, label:'Oesophagus', desc:'The muscular tube carrying food from the throat to the stomach.' }
+  ],
+  angiology: [
+    { fx:0.5, fy:0.85, fz:0.5, label:'Aorta', desc:'The main trunk artery distributing blood outward from the heart.' },
+    { fx:0.55, fy:0.8, fz:0.5, label:'Superior Vena Cava', desc:'A large vein returning blood from the upper body to the heart.' },
+    { fx:0.5, fy:0.95, fz:0.5, label:'Carotid Arteries', desc:'Major arteries supplying blood to the head and neck.' },
+    { fx:0.5, fy:0.1, fz:0.5, label:'Femoral Vessels', desc:'The main artery and vein supplying blood to the legs.' }
+  ],
+  'ecorche_-_anatomy_study': [
+    { fx:0.5, fy:0.72, fz:0.6, label:'Pectoralis Major', desc:'The large fan-shaped muscle of the chest.' },
+    { fx:0.72, fy:0.6, fz:0.5, label:'Biceps Brachii', desc:'The two-headed muscle on the front of the upper arm.' },
+    { fx:0.5, fy:0.55, fz:0.6, label:'Rectus Abdominis', desc:'The "six-pack" muscle running down the front of the abdomen.' },
+    { fx:0.4, fy:0.25, fz:0.55, label:'Quadriceps', desc:'The group of four muscles on the front of the thigh.' },
+    { fx:0.4, fy:0.08, fz:0.55, label:'Gastrocnemius', desc:'The main calf muscle, key for walking and jumping.' }
+  ],
+  liver: [
+    { fx:0.3, fy:0.6, fz:0.5, label:'Right Lobe', desc:'The largest lobe of the liver, occupying most of its bulk.' },
+    { fx:0.75, fy:0.55, fz:0.5, label:'Left Lobe', desc:'The smaller lobe, positioned toward the midline of the body.' },
+    { fx:0.5, fy:0.35, fz:0.55, label:'Porta Hepatis', desc:'Where the hepatic artery, portal vein, and bile duct enter and exit.' }
+  ],
+  kidneys: [
+    { fx:0.75, fy:0.5, fz:0.5, label:'Right Kidney', desc:'Sits slightly lower than the left due to the liver above it.' },
+    { fx:0.25, fy:0.55, fz:0.5, label:'Left Kidney', desc:'Filters blood and produces urine, mirroring the right kidney.' },
+    { fx:0.5, fy:0.5, fz:0.6, label:'Renal Hilum', desc:'The indented region where vessels, nerves, and the ureter connect.' }
+  ],
+  eyeball: [
+    { fx:0.5, fy:0.5, fz:0.85, label:'Cornea', desc:'The clear, curved front surface that begins focusing light.' },
+    { fx:0.5, fy:0.5, fz:0.15, label:'Optic Nerve', desc:'Carries visual signals from the retina to the brain.' },
+    { fx:0.5, fy:0.85, fz:0.5, label:'Sclera', desc:'The tough white outer layer that gives the eye its shape.' }
+  ]
+};
+
+// ── BLOOD / AIR FLOW PATHS (fractional bounding-box control points) ─
+const FLOW_PATHS = {
+  human_heart_3d_model: [
+    { color: 0x3d8fe0, label: 'Deoxygenated blood → lungs', points: [[0.68,0.82,0.5],[0.72,0.62,0.55],[0.6,0.45,0.5],[0.5,0.28,0.45]] },
+    { color: 0xe63946, label: 'Oxygenated blood → body',    points: [[0.32,0.28,0.5],[0.3,0.5,0.5],[0.38,0.75,0.5],[0.48,0.95,0.5]] }
+  ],
+  realistic_human_lungs: [
+    { color: 0x3ec6e0, label: 'Inhaled oxygen',   points: [[0.5,0.95,0.5],[0.5,0.78,0.5],[0.35,0.55,0.5],[0.28,0.28,0.5]] },
+    { color: 0xf4b942, label: 'Exhaled carbon dioxide', points: [[0.65,0.28,0.5],[0.6,0.55,0.5],[0.5,0.78,0.5],[0.5,0.95,0.5]] }
+  ]
+};
+
 
 // ── THREE.JS ──────────────────────────────────────────────────────
 const canvas = document.getElementById('cv');
@@ -1602,6 +1820,7 @@ resize();
 window.addEventListener('resize', resize);
 
 // ── ORBIT CONTROLS ────────────────────────────────────────────────
+let panMode = false;
 const oc = (() => {
   let state = 0, autoRot = true;
   const sph = { theta: 0, phi: Math.PI / 2, r: 5 };
@@ -1613,10 +1832,21 @@ const oc = (() => {
   const ps = new THREE.Vector2();
   const DAMPING = 0.08;
 
+  function doPan(dx, dy) {
+    const px = dx * 0.003 * sph.r;
+    const py = dy * 0.003 * sph.r;
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0).multiplyScalar(-px);
+    const up    = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1).multiplyScalar(py);
+    pan.add(right).add(up);
+  }
+
   const el = canvas;
   el.addEventListener('mousedown', e => {
     e.preventDefault();
-    if (e.button === 0) { state = 1; rs.set(e.clientX, e.clientY); }
+    if (e.button === 0) {
+      if (panMode || e.shiftKey) { state = 3; ps.set(e.clientX, e.clientY); }
+      else { state = 1; rs.set(e.clientX, e.clientY); }
+    }
     else if (e.button === 2) { state = 3; ps.set(e.clientX, e.clientY); }
   });
   el.addEventListener('mousemove', e => {
@@ -1627,11 +1857,7 @@ const oc = (() => {
       delta.phi   -= (re.y - rs.y) * 0.006;
       rs.copy(re);
     } else if (state === 3) {
-      const dx = (e.clientX - ps.x) * 0.003 * sph.r;
-      const dy = (e.clientY - ps.y) * 0.003 * sph.r;
-      const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0).multiplyScalar(-dx);
-      const up    = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1).multiplyScalar(dy);
-      pan.add(right).add(up);
+      doPan(e.clientX - ps.x, e.clientY - ps.y);
       ps.set(e.clientX, e.clientY);
     }
   });
@@ -1643,18 +1869,39 @@ const oc = (() => {
   el.addEventListener('contextmenu', e => e.preventDefault());
 
   let touches = [];
-  el.addEventListener('touchstart', e => { touches = [...e.touches]; if (e.touches.length === 1) { state = 1; rs.set(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
+  let touchMid = new THREE.Vector2();
+  el.addEventListener('touchstart', e => {
+    touches = [...e.touches];
+    if (e.touches.length === 1) {
+      state = panMode ? 3 : 1;
+      rs.set(e.touches[0].clientX, e.touches[0].clientY);
+      ps.set(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length === 2) {
+      state = 0;
+      touchMid.set((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2);
+    }
+  }, { passive: false });
   el.addEventListener('touchmove', e => {
     e.preventDefault();
-    if (e.touches.length === 1 && state === 1) {
+    if (e.touches.length === 1) {
       re.set(e.touches[0].clientX, e.touches[0].clientY);
-      delta.theta -= (re.x - rs.x) * 0.006;
-      delta.phi   -= (re.y - rs.y) * 0.006;
-      rs.copy(re);
+      if (state === 3) {
+        doPan(re.x - ps.x, re.y - ps.y);
+        ps.copy(re);
+      } else {
+        delta.theta -= (re.x - rs.x) * 0.006;
+        delta.phi   -= (re.y - rs.y) * 0.006;
+        rs.copy(re);
+      }
     } else if (e.touches.length === 2 && touches.length === 2) {
+      // Pinch to zoom
       const d0 = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
       const d1 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       scale *= d0 / d1;
+      // Two-finger drag to pan (vertical scroll / repositioning)
+      const newMid = new THREE.Vector2((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2);
+      doPan(newMid.x - touchMid.x, newMid.y - touchMid.y);
+      touchMid.copy(newMid);
       touches = [...e.touches];
     }
   }, { passive: false });
@@ -1685,6 +1932,9 @@ const oc = (() => {
     update,
     setAutoRotate: v => { autoRot = v; },
     getAutoRotate: () => autoRot,
+    zoom: factor => { scale *= factor; },
+    getWorldPos: (localVec) => localVec, // placeholder, unused
+    project: (vec3) => vec3.clone().project(camera),
     reset: (r = 5) => {
       sph.theta = 0; sph.phi = Math.PI / 2; sph.r = r;
       target.set(0, 0, 0); pan.set(0, 0, 0); scale = 1;
@@ -1696,6 +1946,8 @@ const oc = (() => {
 function animate() {
   requestAnimationFrame(animate);
   oc.update();
+  updateFlowParticles();
+  updateHotspotPositions();
   renderer.render(scene, camera);
 }
 animate();
@@ -1763,7 +2015,132 @@ window.setClipAxis = function(axis) {
   setClipPlane(slider.value);
 };
 
-// ── BUILD SIDEBAR ─────────────────────────────────────────────────
+// ── HOTSPOT LABELS ───────────────────────────────────────────────
+let hotspotMarkers = [];
+let labelsOn = true;
+
+function closeHotspotPopup() {
+  document.getElementById('hotspotPopup').classList.remove('show');
+  hotspotMarkers.forEach(m => m.el.classList.remove('active'));
+}
+
+function showHotspotPopup(idx, h) {
+  hotspotMarkers.forEach((m, i) => m.el.classList.toggle('active', i === idx));
+  document.getElementById('hpNum').textContent = 'Part ' + (idx + 1);
+  document.getElementById('hpTitle').textContent = h.label;
+  document.getElementById('hpDesc').textContent = h.desc;
+  document.getElementById('hotspotPopup').classList.add('show');
+}
+
+function buildHotspots(organ) {
+  const layer = document.getElementById('hotspotLayer');
+  layer.innerHTML = '';
+  hotspotMarkers = [];
+  closeHotspotPopup();
+  const spots = HOTSPOTS[organ.id];
+  const btn = document.getElementById('btnLabels');
+  if (!spots || !currentModel) { btn.style.display = 'none'; return; }
+  btn.style.display = 'flex';
+  const wbox = new THREE.Box3().setFromObject(currentModel);
+  const wsize = wbox.getSize(new THREE.Vector3());
+  spots.forEach((h, i) => {
+    const pos = new THREE.Vector3(
+      wbox.min.x + wsize.x * h.fx,
+      wbox.min.y + wsize.y * h.fy,
+      wbox.min.z + wsize.z * h.fz
+    );
+    const el = document.createElement('div');
+    el.className = 'hotspot-marker';
+    el.textContent = i + 1;
+    el.onclick = (e) => { e.stopPropagation(); showHotspotPopup(i, h); };
+    layer.appendChild(el);
+    hotspotMarkers.push({ el, pos });
+  });
+}
+
+function updateHotspotPositions() {
+  if (!hotspotMarkers.length || !labelsOn) return;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  hotspotMarkers.forEach(m => {
+    const p = m.pos.clone().project(camera);
+    m.el.classList.toggle('behind', p.z > 1);
+    m.el.style.left = ((p.x * 0.5 + 0.5) * w) + 'px';
+    m.el.style.top = ((-p.y * 0.5 + 0.5) * h) + 'px';
+  });
+}
+
+window.toggleLabels = function() {
+  labelsOn = !labelsOn;
+  document.getElementById('hotspotLayer').classList.toggle('show', labelsOn);
+  document.getElementById('btnLabels').classList.toggle('on', labelsOn);
+  if (!labelsOn) closeHotspotPopup();
+};
+
+// ── BLOOD / AIR FLOW ANIMATION ───────────────────────────────────
+let flowOn = false;
+let flowParticles = [];
+const flowGroup = new THREE.Group();
+scene.add(flowGroup);
+const arrowGeo = new THREE.ConeGeometry(0.045, 0.14, 8);
+const FLOW_UP = new THREE.Vector3(0, 1, 0);
+
+function buildFlowArrows(organ) {
+  flowGroup.clear();
+  flowParticles = [];
+  flowOn = false;
+  const btn = document.getElementById('btnFlow');
+  document.getElementById('flowLegend').classList.remove('show');
+  btn.classList.remove('on');
+  const paths = FLOW_PATHS[organ.id];
+  if (!paths || !currentModel) { btn.style.display = 'none'; return; }
+  btn.style.display = 'flex';
+  const wbox = new THREE.Box3().setFromObject(currentModel);
+  const wsize = wbox.getSize(new THREE.Vector3());
+  const legendItems = document.getElementById('flowLegendItems');
+  legendItems.innerHTML = '';
+  paths.forEach(p => {
+    const worldPts = p.points.map(([fx,fy,fz]) => new THREE.Vector3(
+      wbox.min.x + wsize.x * fx, wbox.min.y + wsize.y * fy, wbox.min.z + wsize.z * fz
+    ));
+    const curve = new THREE.CatmullRomCurve3(worldPts, false, 'catmullrom', 0.3);
+    const mat = new THREE.MeshStandardMaterial({ color: p.color, emissive: p.color, emissiveIntensity: 0.5, roughness: 0.4 });
+    for (let i = 0; i < 3; i++) {
+      const mesh = new THREE.Mesh(arrowGeo, mat);
+      const t0 = i / 3;
+      flowGroup.add(mesh);
+      flowParticles.push({ mesh, curve, t: t0, speed: 0.0035 });
+    }
+    const li = document.createElement('div');
+    li.className = 'fl-item';
+    li.innerHTML = `<span class="fl-dot" style="background:#${p.color.toString(16).padStart(6,'0')}"></span>${p.label}`;
+    legendItems.appendChild(li);
+  });
+  flowGroup.visible = false;
+}
+
+function updateFlowParticles() {
+  if (!flowOn) return;
+  flowParticles.forEach(p => {
+    p.t += p.speed;
+    if (p.t > 1) p.t -= 1;
+    const t = Math.min(Math.max(p.t, 0.001), 0.999);
+    const pos = p.curve.getPointAt(t);
+    const tangent = p.curve.getTangentAt(t).normalize();
+    p.mesh.position.copy(pos);
+    p.mesh.quaternion.setFromUnitVectors(FLOW_UP, tangent);
+  });
+}
+
+window.toggleFlow = function() {
+  if (!currentModel || !flowParticles.length) return;
+  flowOn = !flowOn;
+  flowGroup.visible = flowOn;
+  document.getElementById('btnFlow').classList.toggle('on', flowOn);
+  document.getElementById('flowLegend').classList.toggle('show', flowOn);
+  showToast(flowOn ? 'Flow animation on' : 'Flow animation off');
+};
+
+
 const sbList = document.getElementById('sbList');
 ORGANS.forEach(o => {
   const el = document.createElement('div');
@@ -1924,6 +2301,8 @@ async function selectOrgan(organ) {
     document.getElementById('xraySlider').value = 0;
     setClipPlane(0);
     applyClipping(currentModel);
+    buildHotspots(organ);
+    buildFlowArrows(organ);
 
     oc.reset(4.5);
     grid.position.y = -box.getSize(new THREE.Vector3()).y * sc * 0.5 - 0.3;
@@ -2160,8 +2539,13 @@ window.toggleExplode = function() {
   document.getElementById('btnExp').classList.toggle('on', exploded);
 };
 
-window.zoomIn  = () => { camera.position.multiplyScalar(0.85); showToast('Zoom in'); };
-window.zoomOut = () => { camera.position.multiplyScalar(1.18); showToast('Zoom out'); };
+window.zoomIn  = () => { oc.zoom(0.85); showToast('Zoom in'); };
+window.zoomOut = () => { oc.zoom(1.18); showToast('Zoom out'); };
+window.togglePanMode = () => {
+  panMode = !panMode;
+  document.getElementById('btnPan').classList.toggle('on', panMode);
+  showToast(panMode ? 'Pan mode on — drag to move up/down/left/right' : 'Pan mode off — drag to rotate');
+};
 
 window.toggleGrid = function() {
   grid.visible = !grid.visible;

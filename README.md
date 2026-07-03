@@ -9,7 +9,7 @@ An interactive 3D human anatomy explorer built with **Three.js**. Load and inspe
 ## Features
 
 ### Core
-- **7 interactive 3D organ/system models** (GLTF/GLB) with orbit, pan, and zoom controls
+- **10 interactive 3D organ/system models** (GLTF/GLB) with orbit, pan, and zoom controls
 - **Wireframe view** and **explode view** for structural inspection
 - Per-organ **overview, key stats, functions, and "did you know" facts**
 - **Audio narration** for every system via the Web Speech API
@@ -19,6 +19,9 @@ An interactive 3D human anatomy explorer built with **Three.js**. Load and inspe
 - 🔍 **Search & filter** — find any organ instantly by name or system, with quick-filter chips
 - ✅ **Progress tracking** — visited systems are remembered (localStorage) and shown as a live progress bar in the header
 - ◐ **Cross-section / X-Ray mode** — a real-time clipping-plane slider (X/Y/Z axis) that slices through any model to reveal internal structure, powered by Three.js `localClippingEnabled`
+- 🏷️ **Numbered part labels** — clickable hotspots on each model that surface a short description of that anatomical structure
+- ➜ **Blood / air flow animation** — animated directional arrows on the heart and lungs showing circulation and respiration pathways
+- ✋ **Pan mode + two-finger touch panning** — dedicated toolbar toggle (or Shift+drag) to move the camera up/down/left/right, in addition to orbit rotation
 - 🎓 **Master Quiz mode** — a full exam pulling randomized questions from every system, with:
   - Score history saved locally across sessions
   - A printable **certificate of completion** (generated as a browser print/PDF) for scores of 70% and above
@@ -31,7 +34,7 @@ An interactive 3D human anatomy explorer built with **Three.js**. Load and inspe
 - [Three.js](https://threejs.org/) r128 (GLTFLoader + DRACOLoader) via CDN
 - Web Speech API for narration
 - `localStorage` for progress and quiz history persistence
-- Pure CSS (custom properties / design tokens), Google Fonts (Syne, Instrument Sans, JetBrains Mono)
+- Pure CSS (custom properties / design tokens), Google Fonts (Bricolage Grotesque, Plus Jakarta Sans, Space Mono)
 
 ---
 
@@ -40,14 +43,17 @@ An interactive 3D human anatomy explorer built with **Three.js**. Load and inspe
 ```
 HumanAnatomy/
 ├── index.html          # entire app (markup, styles, and logic)
-├── models/              # GLTF models + textures for each system
+├── models/              # GLTF/GLB models + textures for each system
 │   ├── human_skeleton/
 │   ├── human_heart_3d_model/
 │   ├── realistic_human_lungs/
 │   ├── human_diaphragm/
 │   ├── digestive_system/
 │   ├── angiology/
-│   └── ecorche_-_anatomy_study/
+│   ├── ecorche_-_anatomy_study/
+│   ├── liver/            # added — CC BY-SA, derived from BodyParts3D
+│   ├── kidneys/           # added — CC BY-SA, derived from BodyParts3D
+│   └── eyeball/           # added — CC BY-SA, derived from BodyParts3D
 └── README.md
 ```
 
