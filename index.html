@@ -1819,6 +1819,131 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
+// ── HOTSPOT LABELS ───────────────────────────────────────────────
+let hotspotMarkers = [];
+let labelsOn = true;
+
+function closeHotspotPopup() {
+  document.getElementById('hotspotPopup').classList.remove('show');
+  hotspotMarkers.forEach(m => m.el.classList.remove('active'));
+}
+
+function showHotspotPopup(idx, h) {
+  hotspotMarkers.forEach((m, i) => m.el.classList.toggle('active', i === idx));
+  document.getElementById('hpNum').textContent = 'Part ' + (idx + 1);
+  document.getElementById('hpTitle').textContent = h.label;
+  document.getElementById('hpDesc').textContent = h.desc;
+  document.getElementById('hotspotPopup').classList.add('show');
+}
+
+function buildHotspots(organ) {
+  const layer = document.getElementById('hotspotLayer');
+  layer.innerHTML = '';
+  hotspotMarkers = [];
+  closeHotspotPopup();
+  const spots = HOTSPOTS[organ.id];
+  const btn = document.getElementById('btnLabels');
+  if (!spots || !currentModel) { btn.style.display = 'none'; return; }
+  btn.style.display = 'flex';
+  const wbox = new THREE.Box3().setFromObject(currentModel);
+  const wsize = wbox.getSize(new THREE.Vector3());
+  spots.forEach((h, i) => {
+    const pos = new THREE.Vector3(
+      wbox.min.x + wsize.x * h.fx,
+      wbox.min.y + wsize.y * h.fy,
+      wbox.min.z + wsize.z * h.fz
+    );
+    const el = document.createElement('div');
+    el.className = 'hotspot-marker';
+    el.textContent = i + 1;
+    el.onclick = (e) => { e.stopPropagation(); showHotspotPopup(i, h); };
+    layer.appendChild(el);
+    hotspotMarkers.push({ el, pos });
+  });
+}
+
+function updateHotspotPositions() {
+  if (!hotspotMarkers.length || !labelsOn) return;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  hotspotMarkers.forEach(m => {
+    const p = m.pos.clone().project(camera);
+    m.el.classList.toggle('behind', p.z > 1);
+    m.el.style.left = ((p.x * 0.5 + 0.5) * w) + 'px';
+    m.el.style.top = ((-p.y * 0.5 + 0.5) * h) + 'px';
+  });
+}
+
+window.toggleLabels = function() {
+  labelsOn = !labelsOn;
+  document.getElementById('hotspotLayer').classList.toggle('show', labelsOn);
+  document.getElementById('btnLabels').classList.toggle('on', labelsOn);
+  if (!labelsOn) closeHotspotPopup();
+};
+
+// ── BLOOD / AIR FLOW ANIMATION ───────────────────────────────────
+let flowOn = false;
+let flowParticles = [];
+const flowGroup = new THREE.Group();
+scene.add(flowGroup);
+const arrowGeo = new THREE.ConeGeometry(0.045, 0.14, 8);
+const FLOW_UP = new THREE.Vector3(0, 1, 0);
+
+function buildFlowArrows(organ) {
+  flowGroup.clear();
+  flowParticles = [];
+  flowOn = false;
+  const btn = document.getElementById('btnFlow');
+  document.getElementById('flowLegend').classList.remove('show');
+  btn.classList.remove('on');
+  const paths = FLOW_PATHS[organ.id];
+  if (!paths || !currentModel) { btn.style.display = 'none'; return; }
+  btn.style.display = 'flex';
+  const wbox = new THREE.Box3().setFromObject(currentModel);
+  const wsize = wbox.getSize(new THREE.Vector3());
+  const legendItems = document.getElementById('flowLegendItems');
+  legendItems.innerHTML = '';
+  paths.forEach(p => {
+    const worldPts = p.points.map(([fx,fy,fz]) => new THREE.Vector3(
+      wbox.min.x + wsize.x * fx, wbox.min.y + wsize.y * fy, wbox.min.z + wsize.z * fz
+    ));
+    const curve = new THREE.CatmullRomCurve3(worldPts, false, 'catmullrom', 0.3);
+    const mat = new THREE.MeshStandardMaterial({ color: p.color, emissive: p.color, emissiveIntensity: 0.5, roughness: 0.4 });
+    for (let i = 0; i < 3; i++) {
+      const mesh = new THREE.Mesh(arrowGeo, mat);
+      const t0 = i / 3;
+      flowGroup.add(mesh);
+      flowParticles.push({ mesh, curve, t: t0, speed: 0.0035 });
+    }
+    const li = document.createElement('div');
+    li.className = 'fl-item';
+    li.innerHTML = `<span class="fl-dot" style="background:#${p.color.toString(16).padStart(6,'0')}"></span>${p.label}`;
+    legendItems.appendChild(li);
+  });
+  flowGroup.visible = false;
+}
+
+function updateFlowParticles() {
+  if (!flowOn) return;
+  flowParticles.forEach(p => {
+    p.t += p.speed;
+    if (p.t > 1) p.t -= 1;
+    const t = Math.min(Math.max(p.t, 0.001), 0.999);
+    const pos = p.curve.getPointAt(t);
+    const tangent = p.curve.getTangentAt(t).normalize();
+    p.mesh.position.copy(pos);
+    p.mesh.quaternion.setFromUnitVectors(FLOW_UP, tangent);
+  });
+}
+
+window.toggleFlow = function() {
+  if (!currentModel || !flowParticles.length) return;
+  flowOn = !flowOn;
+  flowGroup.visible = flowOn;
+  document.getElementById('btnFlow').classList.toggle('on', flowOn);
+  document.getElementById('flowLegend').classList.toggle('show', flowOn);
+  showToast(flowOn ? 'Flow animation on' : 'Flow animation off');
+};
+
 // ── ORBIT CONTROLS ────────────────────────────────────────────────
 let panMode = false;
 const oc = (() => {
@@ -2015,132 +2140,7 @@ window.setClipAxis = function(axis) {
   setClipPlane(slider.value);
 };
 
-// ── HOTSPOT LABELS ───────────────────────────────────────────────
-let hotspotMarkers = [];
-let labelsOn = true;
-
-function closeHotspotPopup() {
-  document.getElementById('hotspotPopup').classList.remove('show');
-  hotspotMarkers.forEach(m => m.el.classList.remove('active'));
-}
-
-function showHotspotPopup(idx, h) {
-  hotspotMarkers.forEach((m, i) => m.el.classList.toggle('active', i === idx));
-  document.getElementById('hpNum').textContent = 'Part ' + (idx + 1);
-  document.getElementById('hpTitle').textContent = h.label;
-  document.getElementById('hpDesc').textContent = h.desc;
-  document.getElementById('hotspotPopup').classList.add('show');
-}
-
-function buildHotspots(organ) {
-  const layer = document.getElementById('hotspotLayer');
-  layer.innerHTML = '';
-  hotspotMarkers = [];
-  closeHotspotPopup();
-  const spots = HOTSPOTS[organ.id];
-  const btn = document.getElementById('btnLabels');
-  if (!spots || !currentModel) { btn.style.display = 'none'; return; }
-  btn.style.display = 'flex';
-  const wbox = new THREE.Box3().setFromObject(currentModel);
-  const wsize = wbox.getSize(new THREE.Vector3());
-  spots.forEach((h, i) => {
-    const pos = new THREE.Vector3(
-      wbox.min.x + wsize.x * h.fx,
-      wbox.min.y + wsize.y * h.fy,
-      wbox.min.z + wsize.z * h.fz
-    );
-    const el = document.createElement('div');
-    el.className = 'hotspot-marker';
-    el.textContent = i + 1;
-    el.onclick = (e) => { e.stopPropagation(); showHotspotPopup(i, h); };
-    layer.appendChild(el);
-    hotspotMarkers.push({ el, pos });
-  });
-}
-
-function updateHotspotPositions() {
-  if (!hotspotMarkers.length || !labelsOn) return;
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  hotspotMarkers.forEach(m => {
-    const p = m.pos.clone().project(camera);
-    m.el.classList.toggle('behind', p.z > 1);
-    m.el.style.left = ((p.x * 0.5 + 0.5) * w) + 'px';
-    m.el.style.top = ((-p.y * 0.5 + 0.5) * h) + 'px';
-  });
-}
-
-window.toggleLabels = function() {
-  labelsOn = !labelsOn;
-  document.getElementById('hotspotLayer').classList.toggle('show', labelsOn);
-  document.getElementById('btnLabels').classList.toggle('on', labelsOn);
-  if (!labelsOn) closeHotspotPopup();
-};
-
-// ── BLOOD / AIR FLOW ANIMATION ───────────────────────────────────
-let flowOn = false;
-let flowParticles = [];
-const flowGroup = new THREE.Group();
-scene.add(flowGroup);
-const arrowGeo = new THREE.ConeGeometry(0.045, 0.14, 8);
-const FLOW_UP = new THREE.Vector3(0, 1, 0);
-
-function buildFlowArrows(organ) {
-  flowGroup.clear();
-  flowParticles = [];
-  flowOn = false;
-  const btn = document.getElementById('btnFlow');
-  document.getElementById('flowLegend').classList.remove('show');
-  btn.classList.remove('on');
-  const paths = FLOW_PATHS[organ.id];
-  if (!paths || !currentModel) { btn.style.display = 'none'; return; }
-  btn.style.display = 'flex';
-  const wbox = new THREE.Box3().setFromObject(currentModel);
-  const wsize = wbox.getSize(new THREE.Vector3());
-  const legendItems = document.getElementById('flowLegendItems');
-  legendItems.innerHTML = '';
-  paths.forEach(p => {
-    const worldPts = p.points.map(([fx,fy,fz]) => new THREE.Vector3(
-      wbox.min.x + wsize.x * fx, wbox.min.y + wsize.y * fy, wbox.min.z + wsize.z * fz
-    ));
-    const curve = new THREE.CatmullRomCurve3(worldPts, false, 'catmullrom', 0.3);
-    const mat = new THREE.MeshStandardMaterial({ color: p.color, emissive: p.color, emissiveIntensity: 0.5, roughness: 0.4 });
-    for (let i = 0; i < 3; i++) {
-      const mesh = new THREE.Mesh(arrowGeo, mat);
-      const t0 = i / 3;
-      flowGroup.add(mesh);
-      flowParticles.push({ mesh, curve, t: t0, speed: 0.0035 });
-    }
-    const li = document.createElement('div');
-    li.className = 'fl-item';
-    li.innerHTML = `<span class="fl-dot" style="background:#${p.color.toString(16).padStart(6,'0')}"></span>${p.label}`;
-    legendItems.appendChild(li);
-  });
-  flowGroup.visible = false;
-}
-
-function updateFlowParticles() {
-  if (!flowOn) return;
-  flowParticles.forEach(p => {
-    p.t += p.speed;
-    if (p.t > 1) p.t -= 1;
-    const t = Math.min(Math.max(p.t, 0.001), 0.999);
-    const pos = p.curve.getPointAt(t);
-    const tangent = p.curve.getTangentAt(t).normalize();
-    p.mesh.position.copy(pos);
-    p.mesh.quaternion.setFromUnitVectors(FLOW_UP, tangent);
-  });
-}
-
-window.toggleFlow = function() {
-  if (!currentModel || !flowParticles.length) return;
-  flowOn = !flowOn;
-  flowGroup.visible = flowOn;
-  document.getElementById('btnFlow').classList.toggle('on', flowOn);
-  document.getElementById('flowLegend').classList.toggle('show', flowOn);
-  showToast(flowOn ? 'Flow animation on' : 'Flow animation off');
-};
-
-
+// ── BUILD SIDEBAR ─────────────────────────────────────────────────
 const sbList = document.getElementById('sbList');
 ORGANS.forEach(o => {
   const el = document.createElement('div');
