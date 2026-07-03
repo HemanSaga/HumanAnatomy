@@ -1643,49 +1643,49 @@ const ORGANS = [
     ]
   },
   {
-    id: 'liver', name: 'Liver', system: 'Hepatic',
+    id: 'liver', name: 'Liver & Gallbladder', system: 'Hepatic',
     icon: '🟤', color: '#a05a3c',
-    path: 'models/liver/scene.glb',
-    overview: 'The liver is the largest internal organ, sitting in the upper right abdomen beneath the diaphragm. A reddish-brown, wedge-shaped gland, it performs over 500 vital functions — from filtering toxins out of the blood to producing bile for digestion, storing vitamins, and synthesising proteins essential for clotting. It is the only internal organ capable of regenerating lost tissue.',
-    stats: [['~1.5kg','Average weight'],['500+','Known functions'],['~1.5L/min','Blood filtered'],['~25%','Can regrow from']],
-    functions: ['Filters toxins, drugs, and metabolic waste from the bloodstream','Produces bile to help digest and absorb fats in the small intestine','Stores glucose as glycogen and releases it to regulate blood sugar','Synthesises clotting factors and major blood plasma proteins','Metabolises alcohol, medications, and hormones'],
-    facts: ['The liver can regenerate to full size even after up to 70% of it is removed.','It processes almost all the blood leaving the stomach and intestines.','The liver performs more than 500 distinct chemical functions.'],
-    audio: 'Your liver is a remarkable reddish-brown organ tucked beneath your ribs, weighing about one and a half kilograms. It quietly performs over five hundred functions, filtering toxins from your blood, producing bile to digest fats, and storing energy as glycogen for when your body needs it. Perhaps most astonishing of all, it is the only internal organ that can regenerate — even if up to seventy percent of it is removed, a healthy liver can grow back to its full size.',
+    path: 'models/human_liver_and_gallbladder/scene.gltf',
+    overview: 'The liver is the largest internal organ, sitting in the upper right abdomen beneath the diaphragm. A reddish-brown, wedge-shaped gland, it performs over 500 vital functions — from filtering toxins out of the blood to producing bile for digestion, storing vitamins, and synthesising proteins essential for clotting. Tucked beneath it is the gallbladder, a small pear-shaped sac that stores and concentrates the bile the liver produces. The liver is also the only internal organ capable of regenerating lost tissue.',
+    stats: [['~1.5kg','Average weight'],['500+','Known functions'],['~1.5L/min','Blood filtered'],['~50mL','Gallbladder capacity']],
+    functions: ['Filters toxins, drugs, and metabolic waste from the bloodstream','Produces bile, which the gallbladder stores and releases to digest fats','Stores glucose as glycogen and releases it to regulate blood sugar','Synthesises clotting factors and major blood plasma proteins','Receives blood from the hepatic artery and nutrient-rich portal vein, and drains it via the inferior vena cava'],
+    facts: ['The liver can regenerate to full size even after up to 70% of it is removed.','The gallbladder can be removed entirely — the liver just releases bile directly into the intestine instead.','The liver performs more than 500 distinct chemical functions.'],
+    audio: 'Your liver is a remarkable reddish-brown organ tucked beneath your ribs, weighing about one and a half kilograms. It quietly performs over five hundred functions, filtering toxins from your blood, producing bile to digest fats, and storing energy as glycogen for when your body needs it. That bile is stored in the small pear-shaped gallbladder just beneath it. The liver receives blood from two sources — the hepatic artery and the portal vein — and drains it all through the inferior vena cava back to the heart. Perhaps most astonishing of all, the liver is the only internal organ that can regenerate — even if up to seventy percent of it is removed, it can grow back to its full size.',
     quiz: [
       { q: 'Approximately how much does an adult liver weigh?', opts: ['0.5 kg','1.5 kg','3 kg','5 kg'], a: 1 },
-      { q: 'What substance does the liver produce to digest fats?', opts: ['Insulin','Bile','Pepsin','Amylase'], a: 1 },
+      { q: 'What does the gallbladder store?', opts: ['Blood','Bile','Urine','Lymph'], a: 1 },
       { q: 'What is unique about the liver compared to most organs?', opts: ['It has no blood supply','It can regenerate','It has no cells','It never changes size'], a: 1 },
-      { q: 'How does the liver help regulate blood sugar?', opts: ['By producing insulin','By storing glucose as glycogen','By absorbing sugar directly','It plays no role'], a: 1 },
+      { q: 'Which large vein carries filtered blood from the liver back to the heart?', opts: ['Portal vein','Hepatic artery','Inferior vena cava','Renal vein'], a: 2 },
     ]
   },
   {
-    id: 'kidneys', name: 'Kidneys', system: 'Renal',
+    id: 'kidneys', name: 'Kidney', system: 'Renal',
     icon: '🫘', color: '#7a3040',
-    path: 'models/kidneys/scene.glb',
-    overview: 'The kidneys are a pair of bean-shaped organs located at the back of the abdomen, one on each side of the spine. Each contains roughly a million tiny filtering units called nephrons, which together filter the entire blood supply many times a day — removing waste, balancing fluids and electrolytes, and producing urine. The kidneys also release hormones that regulate blood pressure and stimulate red blood cell production.',
+    path: 'models/human_kidney/scene.gltf',
+    overview: 'The kidney is a bean-shaped organ found in a mirrored pair at the back of the abdomen, one on each side of the spine. Each kidney contains roughly a million tiny filtering units called nephrons, which together filter the entire blood supply many times a day — removing waste, balancing fluids and electrolytes, and producing urine. Blood and urine pass through the hilum, the indented notch on the kidney\'s medial side, where the renal artery, renal vein, and ureter connect.',
     stats: [['2','Kidneys per body'],['~1M','Nephrons per kidney'],['~180L','Fluid filtered daily'],['~1–2L','Urine produced daily']],
     functions: ['Filters waste products and excess fluid out of the blood to form urine','Regulates the body\'s balance of water, sodium, and potassium','Releases renin to help control blood pressure','Produces erythropoietin, which stimulates red blood cell production','Activates vitamin D for calcium absorption and bone health'],
     facts: ['Your kidneys filter your entire blood volume roughly 40 times a day.','You can live a full life with just one functioning kidney.','Each kidney contains about a million microscopic filters called nephrons.'],
-    audio: 'Your kidneys are two bean-shaped organs, each about the size of a fist, working around the clock as your body\'s filtration system. Together they filter around one hundred and eighty litres of fluid every single day, extracting waste and excess water to produce roughly one to two litres of urine. Inside each kidney are about a million microscopic filtering units called nephrons. Beyond filtration, your kidneys also help control blood pressure and trigger the production of red blood cells.',
+    audio: 'Your kidneys are a pair of bean-shaped organs, each about the size of a fist, working around the clock as your body\'s filtration system. Together they filter around one hundred and eighty litres of fluid every single day, extracting waste and excess water to produce roughly one to two litres of urine. Inside each kidney are about a million microscopic filtering units called nephrons. Blood and urine pass in and out through the hilum, the notch where the renal artery, renal vein, and ureter all connect. Beyond filtration, your kidneys also help control blood pressure and trigger the production of red blood cells.',
     quiz: [
       { q: 'What are the microscopic filtering units in the kidney called?', opts: ['Alveoli','Nephrons','Villi','Neurons'], a: 1 },
       { q: 'Roughly how much fluid do the kidneys filter per day?', opts: ['18 litres','60 litres','180 litres','400 litres'], a: 2 },
-      { q: 'Which hormone do the kidneys release to stimulate red blood cell production?', opts: ['Insulin','Erythropoietin','Cortisol','Adrenaline'], a: 1 },
+      { q: 'What is the notch where vessels and the ureter connect to the kidney called?', opts: ['Cortex','Hilum','Medulla','Capsule'], a: 1 },
       { q: 'How many kidneys does a person need to survive normally?', opts: ['Two, always', 'One is enough', 'Three', 'None, with treatment'], a: 1 },
     ]
   },
   {
-    id: 'eyeball', name: 'Eye', system: 'Sensory',
+    id: 'eyeball', name: 'Eye & Orbital Muscles', system: 'Sensory',
     icon: '👁️', color: '#3f7fa0',
-    path: 'models/eyeball/scene.glb',
-    overview: 'The eye is the body\'s primary organ of vision, a roughly spherical structure about 2.4 cm in diameter. Light enters through the cornea, is focused by the lens, and lands on the retina, where photoreceptor cells called rods and cones convert it into electrical signals. These signals travel along the optic nerve to the brain, which reconstructs them into the images we see.',
-    stats: [['~2.4cm','Diameter'],['~120M','Rod cells'],['~6M','Cone cells'],['~1M','Optic nerve fibres']],
-    functions: ['Focuses light onto the retina via the cornea and lens','Converts light into electrical signals through rods and cones','Rods enable low-light and peripheral vision; cones enable colour and detail','Adjusts pupil size to control the amount of light entering','Sends visual signals to the brain via the optic nerve for processing'],
-    facts: ['The eye can distinguish about 10 million different colours.','Rod cells are so sensitive they can detect a single photon of light.','The eye is the fastest-focusing lens system in the known world, adjusting in milliseconds.'],
-    audio: 'Your eyes are extraordinary optical instruments, each just under two and a half centimetres across, yet capable of distinguishing around ten million different colours. Light passes through the cornea and lens before striking the retina at the back of the eye, where over a hundred million rod cells and six million cone cells convert that light into electrical signals. Rods handle low-light and peripheral vision, while cones capture colour and fine detail. Every signal then races along the optic nerve to your brain, which builds the picture you actually perceive.',
+    path: 'models/muscles_of_the_orbit_eye/scene.gltf',
+    overview: 'The eye is the body\'s primary organ of vision, a roughly spherical structure about 2.4 cm in diameter, seated within the bony eye socket, or orbit. Light enters through the cornea, is focused by the lens, and lands on the retina, where photoreceptor cells convert it into electrical signals sent to the brain via the optic nerve. Surrounding the eyeball are six extraocular muscles — the recti and oblique muscles — which work together to rotate the eye with remarkable speed and precision, allowing coordinated movement between both eyes.',
+    stats: [['~2.4cm','Eyeball diameter'],['6','Extraocular muscles'],['~120M','Rod cells'],['~6M','Cone cells']],
+    functions: ['Focuses light onto the retina via the cornea and lens','Converts light into electrical signals through rods and cones','Six extraocular muscles rotate the eye up, down, and side to side','The superior and inferior oblique muscles enable rotational eye movement','Sends visual signals to the brain via the optic nerve for processing'],
+    facts: ['The eye can distinguish about 10 million different colours.','The extraocular muscles are among the fastest-contracting muscles in the body.','Both eyes move together in a tightly coordinated pair, controlled by cranial nerves III, IV, and VI.'],
+    audio: 'Your eyes are extraordinary optical instruments, each just under two and a half centimetres across, yet capable of distinguishing around ten million different colours. Light passes through the cornea and lens before striking the retina, where photoreceptor cells convert light into electrical signals sent to the brain along the optic nerve. Wrapped around each eyeball are six extraocular muscles, among the fastest-contracting muscles in your entire body, working in perfect coordination to sweep both eyes together as you track a moving object or scan a room.',
     quiz: [
       { q: 'What part of the eye focuses light onto the retina?', opts: ['Cornea and lens','Retina alone','Optic nerve','Sclera'], a: 0 },
-      { q: 'Which photoreceptor cells are responsible for colour vision?', opts: ['Rods','Cones','Nerves','Ganglion cells'], a: 1 },
+      { q: 'How many extraocular muscles control movement of each eye?', opts: ['2','4','6','8'], a: 2 },
       { q: 'Roughly how many colours can the human eye distinguish?', opts: ['10,000','1 million','10 million','100 million'], a: 2 },
       { q: 'What carries visual signals from the eye to the brain?', opts: ['Spinal cord','Optic nerve','Vagus nerve','Carotid artery'], a: 1 },
     ]
@@ -1740,20 +1740,28 @@ const HOTSPOTS = {
     { fx:0.4, fy:0.25, fz:0.55, label:'Quadriceps', desc:'The group of four muscles on the front of the thigh.' },
     { fx:0.4, fy:0.08, fz:0.55, label:'Gastrocnemius', desc:'The main calf muscle, key for walking and jumping.' }
   ],
-  liver: [
-    { fx:0.3, fy:0.6, fz:0.5, label:'Right Lobe', desc:'The largest lobe of the liver, occupying most of its bulk.' },
-    { fx:0.75, fy:0.55, fz:0.5, label:'Left Lobe', desc:'The smaller lobe, positioned toward the midline of the body.' },
-    { fx:0.5, fy:0.35, fz:0.55, label:'Porta Hepatis', desc:'Where the hepatic artery, portal vein, and bile duct enter and exit.' }
-  ],
   kidneys: [
-    { fx:0.75, fy:0.5, fz:0.5, label:'Right Kidney', desc:'Sits slightly lower than the left due to the liver above it.' },
-    { fx:0.25, fy:0.55, fz:0.5, label:'Left Kidney', desc:'Filters blood and produces urine, mirroring the right kidney.' },
-    { fx:0.5, fy:0.5, fz:0.6, label:'Renal Hilum', desc:'The indented region where vessels, nerves, and the ureter connect.' }
+    { fx:0.5, fy:0.55, fz:0.6, label:'Hilum', desc:'The indented notch where the renal artery, renal vein, and ureter connect.' },
+    { fx:0.5, fy:0.15, fz:0.5, label:'Ureter', desc:'The tube carrying urine from the kidney down to the bladder.' },
+    { fx:0.5, fy:0.85, fz:0.4, label:'Renal Capsule', desc:'The tough fibrous outer covering that protects the kidney.' }
   ],
   eyeball: [
-    { fx:0.5, fy:0.5, fz:0.85, label:'Cornea', desc:'The clear, curved front surface that begins focusing light.' },
-    { fx:0.5, fy:0.5, fz:0.15, label:'Optic Nerve', desc:'Carries visual signals from the retina to the brain.' },
-    { fx:0.5, fy:0.85, fz:0.5, label:'Sclera', desc:'The tough white outer layer that gives the eye its shape.' }
+    { fx:0.5, fy:0.55, fz:0.85, label:'Eyeball', desc:'The spherical organ of vision, seated within the bony orbit.' },
+    { fx:0.5, fy:0.85, fz:0.5, label:'Superior Rectus', desc:'One of six extraocular muscles; rotates the eye upward.' },
+    { fx:0.2, fy:0.5, fz:0.5, label:'Lateral Rectus', desc:'Rotates the eye outward, away from the nose.' },
+    { fx:0.5, fy:0.5, fz:0.1, label:'Optic Nerve', desc:'Carries visual signals from the retina back to the brain.' }
+  ]
+};
+
+// ── NODE-MATCHED HOTSPOTS (precise — positioned from the model's actual
+//    named mesh parts rather than an estimated fraction of the bounding box) ──
+const HOTSPOT_NODES = {
+  liver: [
+    { match: 'liver.001', label: 'Liver', desc: 'The largest internal organ, filtering blood and producing bile.' },
+    { match: 'gallbladder', label: 'Gallbladder', desc: 'A small sac beneath the liver that stores and concentrates bile.' },
+    { match: 'hepatic artery', label: 'Hepatic Artery', desc: 'Carries oxygen-rich blood from the heart into the liver.' },
+    { match: 'portal vein', label: 'Portal Vein', desc: 'Carries nutrient-rich blood from the intestines into the liver for processing.' },
+    { match: 'inferior vena cava', label: 'Inferior Vena Cava', desc: 'The large vein draining filtered blood from the liver back to the heart.' }
   ]
 };
 
@@ -1836,29 +1844,60 @@ function showHotspotPopup(idx, h) {
   document.getElementById('hotspotPopup').classList.add('show');
 }
 
+function findNamedPartCenter(root, matchStr) {
+  const needle = matchStr.toLowerCase();
+  let box = null;
+  root.traverse(o => {
+    if (o.isMesh && o.name && o.name.toLowerCase().includes(needle)) {
+      const b = new THREE.Box3().setFromObject(o);
+      box = box ? box.union(b) : b;
+    }
+  });
+  return box ? box.getCenter(new THREE.Vector3()) : null;
+}
+
 function buildHotspots(organ) {
   const layer = document.getElementById('hotspotLayer');
   layer.innerHTML = '';
   hotspotMarkers = [];
   closeHotspotPopup();
-  const spots = HOTSPOTS[organ.id];
   const btn = document.getElementById('btnLabels');
-  if (!spots || !currentModel) { btn.style.display = 'none'; return; }
+  if (!currentModel) { btn.style.display = 'none'; return; }
+
+  const nodeSpots = HOTSPOT_NODES[organ.id];
+  const fracSpots = HOTSPOTS[organ.id];
+
+  let entries = []; // { pos: THREE.Vector3, label, desc }
+
+  if (nodeSpots) {
+    nodeSpots.forEach(h => {
+      const center = findNamedPartCenter(currentModel, h.match);
+      if (center) entries.push({ pos: center, label: h.label, desc: h.desc });
+    });
+  }
+  if (!entries.length && fracSpots) {
+    const wbox = new THREE.Box3().setFromObject(currentModel);
+    const wsize = wbox.getSize(new THREE.Vector3());
+    fracSpots.forEach(h => {
+      const pos = new THREE.Vector3(
+        wbox.min.x + wsize.x * h.fx,
+        wbox.min.y + wsize.y * h.fy,
+        wbox.min.z + wsize.z * h.fz
+      );
+      entries.push({ pos, label: h.label, desc: h.desc });
+    });
+  }
+
+  if (!entries.length) { btn.style.display = 'none'; return; }
   btn.style.display = 'flex';
-  const wbox = new THREE.Box3().setFromObject(currentModel);
-  const wsize = wbox.getSize(new THREE.Vector3());
-  spots.forEach((h, i) => {
-    const pos = new THREE.Vector3(
-      wbox.min.x + wsize.x * h.fx,
-      wbox.min.y + wsize.y * h.fy,
-      wbox.min.z + wsize.z * h.fz
-    );
+
+  entries.forEach((h, i) => {
     const el = document.createElement('div');
     el.className = 'hotspot-marker';
     el.textContent = i + 1;
     el.onclick = (e) => { e.stopPropagation(); showHotspotPopup(i, h); };
     layer.appendChild(el);
-    hotspotMarkers.push({ el, pos });
+    hotspotMarkers.push({ el, pos: h.pos });
   });
 }
 

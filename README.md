@@ -51,11 +51,19 @@ HumanAnatomy/
 │   ├── digestive_system/
 │   ├── angiology/
 │   ├── ecorche_-_anatomy_study/
-│   ├── liver/            # added — CC BY-SA, derived from BodyParts3D
-│   ├── kidneys/           # added — CC BY-SA, derived from BodyParts3D
-│   └── eyeball/           # added — CC BY-SA, derived from BodyParts3D
+│   ├── human_liver_and_gallbladder/
+│   ├── human_kidney/
+│   └── muscles_of_the_orbit_eye/
 └── README.md
 ```
+
+## Credits
+
+All 3D models are sourced from Sketchfab under CC-BY-4.0 — full attribution is included in each model's own `license.txt`. Notably:
+
+- **Human liver and gallbladder** by [ElliotSS](https://sketchfab.com/ElliotSS)
+- **Human Kidney** by [neshallads](https://sketchfab.com/neshallads)
+- **Muscles of the Orbit (Eye)** by [thunderpig](https://sketchfab.com/thunderpig)
 
 ## Running Locally
 
@@ -76,10 +84,6 @@ Or use any static server (VS Code Live Server, `npx serve`, etc).
 3. Under **Build and deployment**, select **Deploy from a branch**.
 4. Choose the `main` branch and `/ (root)` folder, then **Save**.
 5. Your site will be live at `https://<username>.github.io/<repo-name>/` within a minute or two.
-
-## Credits
-
-3D models sourced from Sketchfab (see each model's `license.txt` for attribution).
 
 ## License
 
