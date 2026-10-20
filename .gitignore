@@ -1,0 +1,9 @@
+# Local documents and unrelated workspace projects
+/artifacts/
+/output/
+/nutriLens/
+
+# Generated caches
+__pycache__/
+*.py[cod]
+.DS_Store

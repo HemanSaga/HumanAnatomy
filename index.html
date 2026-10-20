@@ -1192,17 +1192,18 @@ header {
 .cert-score { font-family: var(--f-mono); font-size: 20px; font-weight: 700; margin-bottom: 30px; }
 .cert-footer { display: flex; justify-content: space-between; margin-top: 40px; font-family: var(--f-mono); font-size: 11px; color: #2a3f52; }
 </style>
+<link rel="stylesheet" href="assets/experience.css?v=organs3">
 </head>
 <body>
 
 <!-- PARTICLE CANVAS -->
-<canvas id="particles"></canvas>
+<canvas id="particles" style="display:none"></canvas>
 
 <!-- INTRO SPLASH -->
-<div id="intro">
-  <div class="intro-eyebrow">Interactive Medical Atlas · 2025</div>
+<div id="intro" style="display:none">
+  <div class="intro-eyebrow">Meet your body. Discover its rhythm.</div>
   <div class="intro-title">COR<em>PUS</em></div>
-  <div class="intro-sub">Seven systems. One body. Explore the human form in 3D.</div>
+  <div class="intro-sub">Ten extraordinary systems. A new way to see yourself.</div>
   <div class="ecg-wrap">
     <svg viewBox="0 0 320 60" xmlns="http://www.w3.org/2000/svg">
       <polyline class="ecg-line" points="
@@ -1218,11 +1219,11 @@ header {
 </div>
 
 <!-- MAIN APP -->
-<div id="app">
+<div id="app" class="visible">
   <header>
     <div class="hdr-logo">COR<span>PUS</span></div>
     <div class="hdr-divider"></div>
-    <div class="hdr-subtitle">Human Anatomy Atlas</div>
+    <div class="hdr-subtitle">THE LIVING ATLAS</div><nav class="main-nav" aria-label="Main navigation"><button id="exploreNav" class="selected">Explore anatomy</button><button id="studioNav">Video lessons <span>10</span></button></nav>
     <svg class="hdr-ecg" viewBox="0 0 1200 2" preserveAspectRatio="none">
       <line class="hdr-ecg-line" x1="0" y1="1" x2="1200" y2="1"/>
     </svg>
@@ -1238,10 +1239,11 @@ header {
     </div>
   </header>
 
-  <div class="body">
+  <section class="experience-heading"><div><div class="eyebrow">A LITTLE CURIOSITY. A WHOLE WORLD WITHIN.</div><h1>Your body, brought to life<span>.</span></h1><p>Look closer. See it move. Understand how it works.</p></div><button class="lesson-launch" id="featuredLesson">▶ &nbsp; Watch: A heartbeat explained <span>WITH MILO →</span></button></section>
+  <div class="body" id="explorer">
     <!-- SIDEBAR -->
     <aside class="sidebar">
-      <div class="sb-section">Anatomy Systems</div>
+      <div class="sb-section">Explore the body <span class="section-count">10</span></div>
       <div class="sb-search-wrap">
         <input type="text" class="sb-search" id="sbSearch" placeholder="Search organs or systems…" oninput="applyFilter()">
       </div>
@@ -1253,9 +1255,11 @@ header {
     <!-- VIEWER -->
     <div class="viewer">
       <canvas id="cv"></canvas>
+      <div class="view-presets" aria-label="Model view"><button onclick="setModelView(0)">Front</button><button onclick="setModelView(1.5708)">Side</button><button onclick="setModelView(3.14159)">Back</button></div>
+      <div id="modelQuality" class="model-quality"></div>
 
       <!-- Loading -->
-      <div class="v-loading" id="vLoading">
+      <div class="v-loading gone" id="vLoading" style="display:none">
         <div class="vl-organ" id="vlName">—</div>
         <svg class="ecg-loader" viewBox="0 0 200 50">
           <polyline class="ecg-loader-line" points="
@@ -1274,8 +1278,8 @@ header {
           <rect x="30" y="0" width="20" height="80" rx="4" fill="currentColor"/>
           <rect x="0" y="30" width="80" height="20" rx="4" fill="currentColor"/>
         </svg>
-        <div class="vw-title">SELECT A SYSTEM</div>
-        <div class="vw-sub">Choose any organ or system from the left panel to load its 3D model.</div>
+        <div class="vw-title">There’s a world inside you.</div>
+        <div class="vw-sub">Choose an organ to explore its anatomy and see how it works.</div>
       </div>
 
       <!-- HUD top-left -->
@@ -1368,7 +1372,7 @@ header {
                 </div>
               </button>
               <div class="ap-progress"><div class="ap-progress-bar" id="apBar"></div></div>
-              <div class="ap-status" id="apStatus">Web Speech API · no download required</div>
+              <div class="ap-status" id="apStatus">Listen to the organ overview</div>
             </div>
 
             <div>
@@ -1484,17 +1488,21 @@ header {
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
+    "three": "./assets/vendor/three.module.js"
   }
 }
 </script>
 
 <script type="module">
 import * as THREE from 'three';
+import { createCirculationModel } from './assets/circulation.js';
+import { createExperience } from './assets/experience.js?v=organs3';
+import { normalizeModel, improveMaterials, attachNativeAnimation } from './assets/model-quality.js';
 
 // ── PARTICLE INTRO ────────────────────────────────────────────────
 (function initParticles() {
   const c = document.getElementById('particles');
+  if (c.style.display === 'none') return;
   const ctx = c.getContext('2d');
   let W, H, particles = [];
   function resize() {
@@ -1613,8 +1621,8 @@ const ORGANS = [
   {
     id: 'angiology', name: 'Circulatory System', system: 'Cardiovascular',
     icon: '🩸', color: '#cc3333',
-    path: 'models/angiology/scene.gltf',
-    overview: 'Angiology covers blood vessels and the lymphatic system. The circulatory system includes about 100,000 km of blood vessels — arteries carry oxygenated blood away from the heart; veins return deoxygenated blood; capillaries enable exchange of gases, nutrients, and waste at the cellular level.',
+    path: 'models/angiology/scene.gltf', schematic: true,
+    overview: 'Angiology covers blood vessels and the lymphatic system. The circulatory system includes about 100,000 km of blood vessels — arteries carry blood away from the heart; veins carry blood back toward it; capillaries enable exchange of gases, nutrients, and waste at the cellular level.',
     stats: [['100K km','Blood vessel length'],['~5L','Blood volume (adult)'],['2.5×','Earth circumference'],['37 trillion','Cells served']],
     functions: ['Transports oxygen and nutrients to every cell in the body','Removes carbon dioxide and metabolic waste products','Regulates body temperature through vessel dilation and constriction','Delivers immune cells and hormones throughout the body','Maintains fluid balance between blood and tissues'],
     facts: ['All blood vessels end-to-end would wrap around the Earth 2.5 times.','Capillaries are so narrow that red blood cells travel single-file.','Blood completes a full circuit of the body in about 60 seconds at rest.'],
@@ -1646,11 +1654,11 @@ const ORGANS = [
     id: 'liver', name: 'Liver & Gallbladder', system: 'Hepatic',
     icon: '🟤', color: '#a05a3c',
     path: 'models/human_liver_and_gallbladder/scene.gltf',
-    overview: 'The liver is the largest internal organ, sitting in the upper right abdomen beneath the diaphragm. A reddish-brown, wedge-shaped gland, it performs over 500 vital functions — from filtering toxins out of the blood to producing bile for digestion, storing vitamins, and synthesising proteins essential for clotting. Tucked beneath it is the gallbladder, a small pear-shaped sac that stores and concentrates the bile the liver produces. The liver is also the only internal organ capable of regenerating lost tissue.',
+    overview: 'The liver is the largest solid internal organ, sitting in the upper right abdomen beneath the diaphragm. A reddish-brown, wedge-shaped gland, it performs over 500 vital functions — from filtering toxins out of the blood to producing bile for digestion, storing vitamins, and synthesising proteins essential for clotting. Tucked beneath it is the gallbladder, a small pear-shaped sac that stores and concentrates the bile the liver produces. The liver has a remarkable capacity to regenerate after injury or partial removal.',
     stats: [['~1.5kg','Average weight'],['500+','Known functions'],['~1.5L/min','Blood filtered'],['~50mL','Gallbladder capacity']],
     functions: ['Filters toxins, drugs, and metabolic waste from the bloodstream','Produces bile, which the gallbladder stores and releases to digest fats','Stores glucose as glycogen and releases it to regulate blood sugar','Synthesises clotting factors and major blood plasma proteins','Receives blood from the hepatic artery and nutrient-rich portal vein, and drains it via the inferior vena cava'],
     facts: ['The liver can regenerate to full size even after up to 70% of it is removed.','The gallbladder can be removed entirely — the liver just releases bile directly into the intestine instead.','The liver performs more than 500 distinct chemical functions.'],
-    audio: 'Your liver is a remarkable reddish-brown organ tucked beneath your ribs, weighing about one and a half kilograms. It quietly performs over five hundred functions, filtering toxins from your blood, producing bile to digest fats, and storing energy as glycogen for when your body needs it. That bile is stored in the small pear-shaped gallbladder just beneath it. The liver receives blood from two sources — the hepatic artery and the portal vein — and drains it all through the inferior vena cava back to the heart. Perhaps most astonishing of all, the liver is the only internal organ that can regenerate — even if up to seventy percent of it is removed, it can grow back to its full size.',
+    audio: 'Your liver is a remarkable reddish-brown organ tucked beneath your ribs, weighing about one and a half kilograms. It quietly performs over five hundred functions, filtering toxins from your blood, producing bile to digest fats, and storing energy as glycogen for when your body needs it. That bile is stored in the small pear-shaped gallbladder just beneath it. The liver receives blood from two sources — the hepatic artery and the portal vein — and drains it all through the inferior vena cava back to the heart. The liver also has a remarkable capacity to regenerate lost tissue.',
     quiz: [
       { q: 'Approximately how much does an adult liver weigh?', opts: ['0.5 kg','1.5 kg','3 kg','5 kg'], a: 1 },
       { q: 'What does the gallbladder store?', opts: ['Blood','Bile','Urine','Lymph'], a: 1 },
@@ -1695,7 +1703,7 @@ const ORGANS = [
 // ── HOTSPOT LABELS (approximate anatomical positions, fractional bounding box) ──
 const HOTSPOTS = {
   human_skeleton: [
-    { fx:0.5, fy:0.97, fz:0.5, label:'Cranium', desc:'The skull houses and protects the brain, formed from 22 fused bones.' },
+    { fx:0.5, fy:0.97, fz:0.5, label:'Cranium', desc:'The skull houses and protects the brain, with eight cranial bones protecting the brain; the whole skull usually has 22 bones.' },
     { fx:0.5, fy:0.68, fz:0.55, label:'Rib Cage', desc:'12 pairs of ribs form a protective cage around the heart and lungs.' },
     { fx:0.5, fy:0.55, fz:0.35, label:'Vertebral Column', desc:'33 vertebrae stacked to support the body and protect the spinal cord.' },
     { fx:0.5, fy:0.42, fz:0.5, label:'Pelvis', desc:'A basin-shaped structure that supports the spine and connects to the legs.' },
@@ -1784,12 +1792,12 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.3;
+renderer.toneMappingExposure = 1.0;
 renderer.localClippingEnabled = true;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x06090f);
-scene.fog = new THREE.Fog(0x06090f, 30, 80);
+scene.background = new THREE.Color(0x0e2428);
+scene.fog = new THREE.Fog(0x0e2428, 30, 80);
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 500);
 camera.position.set(0, 0, 5);
@@ -1801,15 +1809,15 @@ grid.visible = false;
 scene.add(grid);
 
 // Lighting
-const amb = new THREE.AmbientLight(0xc8e0ff, 0.5);
+const amb = new THREE.HemisphereLight(0xfff6e5, 0x354854, 1.0);
 scene.add(amb);
-const key = new THREE.DirectionalLight(0xffffff, 1.6);
+const key = new THREE.DirectionalLight(0xffffff, 1.15);
 key.position.set(4, 8, 5);
 scene.add(key);
-const fill = new THREE.DirectionalLight(0x00e5c8, 0.4);
+const fill = new THREE.DirectionalLight(0xe3edff, 0.45);
 fill.position.set(-5, 2, -4);
 scene.add(fill);
-const back = new THREE.DirectionalLight(0xe63946, 0.2);
+const back = new THREE.DirectionalLight(0xfff4df, 0.25);
 back.position.set(0, -4, -6);
 scene.add(back);
 const rim = new THREE.DirectionalLight(0xffffff, 0.3);
@@ -1819,13 +1827,16 @@ scene.add(rim);
 // Resize
 function resize() {
   const w = canvas.parentElement.clientWidth;
-  const h = canvas.parentElement.clientHeight;
+  const h = Math.max(1, canvas.parentElement.clientHeight - (canvas.parentElement.querySelector('.working-dock')?.offsetHeight || 158));
+  if (!w) return;
+  canvas.parentElement.style.setProperty('--dock-height', `${canvas.parentElement.querySelector('.working-dock')?.offsetHeight || 158}px`);
   renderer.setSize(w, h);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
 resize();
 window.addEventListener('resize', resize);
+new ResizeObserver(resize).observe(canvas.parentElement);
 
 // ── HOTSPOT LABELS ───────────────────────────────────────────────
 let hotspotMarkers = [];
@@ -1845,10 +1856,11 @@ function showHotspotPopup(idx, h) {
 }
 
 function findNamedPartCenter(root, matchStr) {
-  const needle = matchStr.toLowerCase();
+  const normalizeName = name => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const needle = normalizeName(matchStr);
   let box = null;
   root.traverse(o => {
-    if (o.isMesh && o.name && o.name.toLowerCase().includes(needle)) {
+    if (o.isMesh && o.name && normalizeName(o.name).includes(needle)) {
       const b = new THREE.Box3().setFromObject(o);
       box = box ? box.union(b) : b;
     }
@@ -1862,7 +1874,7 @@ function buildHotspots(organ) {
   hotspotMarkers = [];
   closeHotspotPopup();
   const btn = document.getElementById('btnLabels');
-  if (!currentModel) { btn.style.display = 'none'; return; }
+  if (!currentModel || organ.schematic) { btn.style.display = 'none'; return; }
 
   const nodeSpots = HOTSPOT_NODES[organ.id];
   const fracSpots = HOTSPOTS[organ.id];
@@ -1892,7 +1904,9 @@ function buildHotspots(organ) {
   btn.style.display = 'flex';
 
   entries.forEach((h, i) => {
-    const el = document.createElement('div');
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.setAttribute('aria-label', h.label);
     el.className = 'hotspot-marker';
     el.textContent = i + 1;
     el.onclick = (e) => { e.stopPropagation(); showHotspotPopup(i, h); };
@@ -1905,7 +1919,9 @@ function updateHotspotPositions() {
   if (!hotspotMarkers.length || !labelsOn) return;
   const w = canvas.clientWidth, h = canvas.clientHeight;
   hotspotMarkers.forEach(m => {
-    const p = m.pos.clone().project(camera);
+    const position = m.pos.clone();
+    if (currentModel) position.multiply(currentModel.scale).add(currentModel.position);
+    const p = position.project(camera);
     m.el.classList.toggle('behind', p.z > 1);
     m.el.style.left = ((p.x * 0.5 + 0.5) * w) + 'px';
     m.el.style.top = ((-p.y * 0.5 + 0.5) * h) + 'px';
@@ -1928,6 +1944,8 @@ const arrowGeo = new THREE.ConeGeometry(0.045, 0.14, 8);
 const FLOW_UP = new THREE.Vector3(0, 1, 0);
 
 function buildFlowArrows(organ) {
+  const oldFlowMaterials = new Set(flowGroup.children.map(mesh => mesh.material));
+  oldFlowMaterials.forEach(material => material.dispose());
   flowGroup.clear();
   flowParticles = [];
   flowOn = false;
@@ -2095,6 +2113,7 @@ const oc = (() => {
   return {
     update,
     setAutoRotate: v => { autoRot = v; },
+    setView: theta => { sph.theta = theta; sph.phi = Math.PI / 2; delta.theta = 0; delta.phi = 0; autoRot = false; },
     getAutoRotate: () => autoRot,
     zoom: factor => { scale *= factor; },
     getWorldPos: (localVec) => localVec, // placeholder, unused
@@ -2111,10 +2130,11 @@ function animate() {
   requestAnimationFrame(animate);
   oc.update();
   updateFlowParticles();
+  window.corpusExperience?.tick();
   updateHotspotPositions();
   renderer.render(scene, camera);
 }
-animate();
+// Start rendering after state initialization.
 
 // ── STATE ─────────────────────────────────────────────────────────
 let currentModel = null;
@@ -2122,6 +2142,8 @@ let currentOrgan = null;
 let wireframe = false;
 let exploded = false;
 let globalAudio = true;
+let selectionVersion = 0;
+let pendingOrganId = null;
 let speaking = false;
 let audioStartTime = 0;
 let audioDuration = 0;
@@ -2182,7 +2204,8 @@ window.setClipAxis = function(axis) {
 // ── BUILD SIDEBAR ─────────────────────────────────────────────────
 const sbList = document.getElementById('sbList');
 ORGANS.forEach(o => {
-  const el = document.createElement('div');
+  const el = document.createElement('button');
+  el.type = 'button';
   el.className = 'organ-card';
   el.id = `card-${o.id}`;
   el.dataset.name = o.name.toLowerCase();
@@ -2264,27 +2287,21 @@ function markOrganViewed(id) {
 updateProgressUI();
 
 // ── GLTF LOADING ──────────────────────────────────────────────────
-let GLTFLoader, DRACOLoader;
+let GLTFLoader;
 async function ensureLoader() {
-  if (GLTFLoader) return;
-  const m1 = await import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js');
-  const m2 = await import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/DRACOLoader.js');
-  GLTFLoader = m1.GLTFLoader;
-  DRACOLoader = m2.DRACOLoader;
+  if (!GLTFLoader) GLTFLoader = (await import('./assets/vendor/GLTFLoader.js')).GLTFLoader;
 }
-
 async function loadModel(path) {
   await ensureLoader();
-  const draco = new DRACOLoader();
-  draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');
-  const loader = new GLTFLoader();
-  loader.setDRACOLoader(draco);
-  return new Promise((res, rej) => loader.load(path, res, undefined, rej));
+  return new GLTFLoader().loadAsync(path);
 }
 
 // ── SELECT ORGAN ──────────────────────────────────────────────────
 async function selectOrgan(organ) {
-  if (currentOrgan?.id === organ.id) return;
+  if (pendingOrganId === organ.id || (currentOrgan?.id === organ.id && !pendingOrganId && document.getElementById(`card-${organ.id}`).classList.contains('active'))) return;
+  const version = ++selectionVersion;
+  pendingOrganId = organ.id;
+  window.corpusExperience?.stop();
   stopAudio();
 
   document.querySelectorAll('.organ-card').forEach(c => c.classList.remove('active'));
@@ -2300,64 +2317,83 @@ async function selectOrgan(organ) {
   document.getElementById('vlMsg').textContent = 'Parsing geometry…';
 
   // Show HUD / toolbar / hints
+  document.getElementById('motionToggle').disabled = true;
+  document.getElementById('apBtn').disabled = true;
   document.getElementById('vHud').style.display = 'flex';
   document.getElementById('vToolbar').style.display = 'flex';
   document.getElementById('vHints').style.display = 'flex';
   document.getElementById('hudName').textContent = organ.name;
-  document.getElementById('hudSys').textContent = organ.system;
+  document.getElementById('hudSys').textContent = organ.schematic ? 'Schematic · lung circuit above / body circuit below' : organ.system;
 
   // Info panel
   updateInfo(organ);
 
+  // Keep old overlays out of the next model's loading state.
+  closeHotspotPopup();
+  document.getElementById('hotspotLayer').classList.remove('show');
+  flowGroup.visible = false;
+  document.getElementById('flowLegend').classList.remove('show');
+
   // Load
   try {
     document.getElementById('vlMsg').textContent = 'Loading 3D model…';
-    const gltf = await loadModel(organ.path);
+    const gltf = organ.schematic
+      ? { scene: createCirculationModel(THREE) }
+      : await loadModel(organ.path);
 
+    if (version !== selectionVersion) {
+      disposeModel(gltf.scene);
+      return;
+    }
     // Clear old
     if (currentModel) {
       scene.remove(currentModel);
-      currentModel.traverse(o => {
-        if (o.geometry) o.geometry.dispose();
-        if (o.material) [].concat(o.material).forEach(m => m.dispose());
-      });
+      disposeModel(currentModel);
     }
 
     const model = gltf.scene;
-    const box = new THREE.Box3().setFromObject(model);
-    const c = box.getCenter(new THREE.Vector3());
-    const s = box.getSize(new THREE.Vector3());
-    const maxD = Math.max(s.x, s.y, s.z);
-    const sc = 3 / maxD;
-    model.scale.setScalar(sc);
-    model.position.sub(c.multiplyScalar(sc));
-    scene.add(model);
-    currentModel = model;
+    if (organ.id === 'liver') model.rotation.y += Math.PI / 2;
+    improveMaterials(model, Math.min(8, renderer.capabilities.getMaxAnisotropy()));
+    normalizeModel(model, 3);
+    attachNativeAnimation(model, gltf.animations);
+    const centered = new THREE.Group();
+    centered.add(model);
+    scene.add(centered);
+    currentModel = centered;
     currentOrgan = organ;
+    pendingOrganId = null;
+    document.getElementById('apBtn').disabled = false;
+    window.corpusExperience?.select(organ, currentModel);
     wireframe = false; exploded = false;
     document.getElementById('btnWire').classList.remove('on');
     document.getElementById('btnExp').classList.remove('on');
     document.getElementById('xraySlider').value = 0;
     setClipPlane(0);
     applyClipping(currentModel);
+    document.getElementById('modelQuality').textContent = model.userData.animationInfo ? `Native skeletal animation · ${model.userData.animationInfo.tracks} animated tracks` : organ.schematic ? 'Simplified circulation schematic' : 'Original anatomy mesh · illustrative working diagram';
     buildHotspots(organ);
+    document.getElementById('hotspotLayer').classList.toggle('show', labelsOn);
     buildFlowArrows(organ);
 
     oc.reset(4.5);
-    grid.position.y = -box.getSize(new THREE.Vector3()).y * sc * 0.5 - 0.3;
+    oc.setAutoRotate(false);
+    document.getElementById('btnRot').classList.remove('on');
+    grid.position.y = new THREE.Box3().setFromObject(currentModel).min.y - 0.3;
 
     markOrganViewed(organ.id);
 
     // Hide loading
     vl.classList.add('gone');
-    setTimeout(() => { vl.style.display = 'none'; }, 500);
+    setTimeout(() => { if (version === selectionVersion) vl.style.display = 'none'; }, 500);
 
     showToast(`${organ.name} loaded`);
 
-    if (globalAudio) setTimeout(() => playAudio(organ), 900);
+    // Narration starts only through an explicit playback control.
 
   } catch(e) {
-    document.getElementById('vlMsg').textContent = `Failed to load: ${e.message}`;
+    if (version !== selectionVersion) return;
+    pendingOrganId = null;
+    document.getElementById('vlMsg').textContent = 'The model could not load. Select this organ again to retry, or open Video lessons to explore its working process.';
     console.error(e);
   }
 }
@@ -2401,7 +2437,7 @@ function updateInfo(organ) {
   document.getElementById('apIcon').textContent = '▶';
   document.getElementById('apLabel').textContent = 'Play narration';
   document.getElementById('apWave').classList.remove('on');
-  document.getElementById('apStatus').textContent = 'Web Speech API · no download required';
+  document.getElementById('apStatus').textContent = 'Listen to the organ overview';
   document.getElementById('apBar').style.width = '0%';
   clearInterval(audioTimer);
 
@@ -2468,15 +2504,16 @@ window.nextQuestion = function() {
 // ── AUDIO ─────────────────────────────────────────────────────────
 function playAudio(organ) {
   if (!globalAudio || !window.speechSynthesis) return;
+  window.corpusExperience?.stop();
   stopAudio();
   speaking = true;
   const utt = new SpeechSynthesisUtterance(organ.audio);
   utt.rate = 0.9; utt.pitch = 1.0; utt.volume = 1.0;
-  const voices = speechSynthesis.getVoices();
-  const v = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'))
-         || voices.find(v => v.lang.startsWith('en-'))
-         || voices[0];
-  if (v) utt.voice = v;
+  const voices = speechSynthesis.getVoices().filter(v => /^en/.test(v.lang) && !/Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Trinoids|Whisper|Wobble|Zarvox/i.test(v.name));
+  let preferred = ''; try { preferred = localStorage.getItem('corpus_voice') || ''; } catch {}
+  const rank = v => (/natural|neural|premium|enhanced/i.test(v.name)?100:0)+(/Google|Microsoft.*Online/i.test(v.name)?70:0)+(/Samantha|Daniel|Karen|Moira|Rishi/i.test(v.name)?40:0);
+  const v = voices.find(v => v.name === preferred) || voices.sort((a,b)=>rank(b)-rank(a))[0];
+  if (v) { utt.voice = v; utt.lang = v.lang; } else utt.lang = 'en-US';
 
   // Estimate duration
   const wordCount = organ.audio.split(' ').length;
@@ -2531,10 +2568,12 @@ window.toggleGlobalAudio = function() {
   const btn = document.getElementById('audioToggleBtn');
   btn.textContent = globalAudio ? '🔊 Audio' : '🔇 Audio';
   btn.classList.toggle('muted', !globalAudio);
+  window.corpusExperience?.setMuted(!globalAudio);
   if (!globalAudio) stopAudio();
 };
 
 // ── VIEWER CONTROLS ───────────────────────────────────────────────
+window.setModelView = function(angle) { oc.setView(angle); document.getElementById('btnRot').classList.remove('on'); };
 window.resetCam = function() { oc.reset(4.5); showToast('Camera reset'); };
 
 window.toggleRotate = function() {
@@ -2560,7 +2599,7 @@ window.toggleExplode = function() {
   exploded = !exploded;
   if (exploded) {
     explodePositions.clear();
-    currentModel.children.forEach((child, i) => {
+    currentModel.children[0].children.forEach((child, i) => {
       explodePositions.set(child, child.position.clone());
       const dir = new THREE.Vector3(
         (Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5)
@@ -2569,7 +2608,7 @@ window.toggleExplode = function() {
     });
     showToast('Explode view on');
   } else {
-    currentModel.children.forEach(child => {
+    currentModel.children[0].children.forEach(child => {
       const orig = explodePositions.get(child);
       if (orig) child.position.copy(orig);
     });
@@ -2628,6 +2667,8 @@ function buildMasterQuizPool() {
 }
 
 window.openMasterQuiz = function() {
+  window.corpusExperience?.stop();
+  stopAudio();
   document.getElementById('mqOverlay').classList.add('show');
   switchMqTab('take');
   document.getElementById('mqIntro').style.display = 'block';
@@ -2768,6 +2809,33 @@ if (window.speechSynthesis) {
   speechSynthesis.onvoiceschanged = () => {};
 }
 
+function disposeModel(model) {
+  const textures = new Set();
+  model.traverse(o => {
+    o.userData.disposeAnimation?.();
+    o.geometry?.dispose();
+    if (o.material) [].concat(o.material).forEach(m => {
+      Object.values(m).forEach(v => { if (v?.isTexture) textures.add(v); });
+      m.dispose();
+    });
+  });
+  textures.forEach(t => t.dispose());
+}
+window.corpusExperience = createExperience({ organs: ORGANS, selectOrgan, stopAudio,
+  onMuteChanged: muted => {
+    globalAudio = !muted;
+    const button = document.getElementById('audioToggleBtn');
+    button.textContent = muted ? '🔇 Audio' : '🔊 Audio';
+    button.classList.toggle('muted', muted);
+  },
+  setStill: () => { oc.setAutoRotate(false); document.getElementById('btnRot').classList.remove('on'); },
+  prepareMotion: () => {
+    if (exploded) window.toggleExplode();
+    if (xrayOn) window.toggleXray();
+  }
+});
+animate();
+selectOrgan(ORGANS.find(o => o.id === 'human_heart_3d_model'));
 // Expose selectOrgan for external access
 window._selectOrgan = selectOrgan;
 window._ORGANS = ORGANS;
